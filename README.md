@@ -8,6 +8,8 @@
 
 **📖 在线读**：https://yanwaiyue-name.github.io/students-howtolivebetter/
 
+[English](README.en.md) ｜ **中文**
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/状态-写作中-orange)
 ![Entry](https://img.shields.io/badge/条目-99%20条-blue)
