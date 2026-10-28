@@ -1,0 +1,61 @@
+name: 检查
+# 正文一改就检查三件事：条目格式、统计数字、外链。
+# 格式和统计会挡合并；外链只报告（政府站常挡境外 IP，不该因此变红）。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'book/**'
+      - 'README.md'
+      - 'tools/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    paths:
+      - 'book/**'
+      - 'README.md'
+      - 'tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: 条目格式
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/check-format.mjs
+
+  stats:
+    name: 统计一致
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tools/check-stats.mjs
+
+  links:
+    name: 外链检查
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --silent
+      - run: node tools/check-links.mjs
+      - name: 上传链接报告
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-report
+          path: link-report.txt
+          if-no-files-found: ignore

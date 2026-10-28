@@ -1,0 +1,35 @@
+name: 建议新条目
+description: 你觉得某件事该写进这本书
+title: "[新条目] "
+labels: ["新内容"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: 这条回答什么问题
+      description: 一句话，学生会在什么处境下来查这条
+      placeholder: 例：大二转专业没成功，还有什么路
+    validations:
+      required: true
+  - type: textarea
+    id: cost
+    attributes:
+      label: 成本大概是多少
+      description: 钱、时间、要不要长期坚持
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 能查到什么依据
+      description: 官方文件、统计数据、或明确说明「没有公开数据」
+    validations:
+      required: true
+  - type: dropdown
+    id: grade
+    attributes:
+      label: 证据等级
+      options:
+        - A（有官方原文）
+        - B（有权威统计）
+        - C（只有经验，没有系统数据）
+    validations:
+      required: true

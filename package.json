@@ -1,0 +1,16 @@
+{
+  "name": "students-howtolivebetter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "学生版高性价比人生指南：18-25 岁的决策账本",
+  "scripts": {
+    "build": "node tools/build-all.mjs",
+    "check": "node tools/check-format.mjs && node tools/check-stats.mjs",
+    "verify": "node tools/check-format.mjs && node tools/check-stats.mjs && node tools/check-links.mjs",
+    "links": "node tools/check-links.mjs"
+  },
+  "devDependencies": {
+    "undici": "^7.0.0"
+  }
+}

@@ -1,0 +1,34 @@
+name: 纠错
+description: 某条内容写错了、数字过时了、链接失效了
+title: "[纠错] "
+labels: ["纠错"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: 哪一条
+      description: 章节名 + 条目编号，例如「01 大学四年 第 2 条」
+      placeholder: 01-大学四年哪几个决定不可逆.md 第 2 条
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: 现在写的是什么
+      description: 把出问题的那句贴过来
+    validations:
+      required: true
+  - type: textarea
+    id: right
+    attributes:
+      label: 应该是什么，依据是什么
+      description: 请附官方链接或文件原文。没有依据的修改不收。
+    validations:
+      required: true
+  - type: checkboxes
+    id: check
+    attributes:
+      label: 确认
+      options:
+        - label: 我引用的来源是官方文件或原始研究，不是自媒体转述
+          required: true

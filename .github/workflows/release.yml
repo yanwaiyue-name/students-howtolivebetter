@@ -1,0 +1,73 @@
+name: 构建与发布
+# 正文一改就重新生成 5 种格式，挂到固定的 Release "latest" 上，下载链接不变。
+# PR 只构建不发布，产物在 Actions 的 artifact 里。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'book/**'
+      - 'tools/**'
+      - 'README.md'
+      - 'package.json'
+      - '.github/workflows/release.yml'
+  pull_request:
+    paths:
+      - 'book/**'
+      - 'tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 构建
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 安装依赖
+        run: npm install --silent
+
+      - name: 格式检查
+        run: node tools/check-format.mjs
+
+      - name: 统计检查
+        run: node tools/check-stats.mjs
+
+      - name: 构建全部格式
+        run: node tools/build-all.mjs
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-dist
+          path: dist/
+          if-no-files-found: error
+
+      - name: 发布到 Release
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # latest 标签是移动标签：每次覆盖，保证下载链接永久有效
+          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
+          gh release create latest \
+            --title "最新构建" \
+            --notes "正文更新于 $(date -u '+%Y-%m-%d %H:%M UTC')
+
+          包含 5 种格式：网页版 / Markdown / 纯文本 / EPUB / PDF。" \
+            dist/index.html \
+            dist/students-howtolivebetter.md \
+            dist/students-howtolivebetter.txt \
+            dist/students-howtolivebetter.epub \
+            dist/students-howtolivebetter.pdf
