@@ -4,7 +4,7 @@
 
 ## 最快的路：提 Issue 而不是发 PR
 
-如果你只是发现某条写错了、数字过时了，直接提 [纠错 Issue](.github/ISSUE_TEMPLATE/1-纠错.yml)。不用改文件、不用懂 Git。
+如果你只是发现某条写错了、数字过时了，直接提 [纠错 Issue](../../issues/new?template=1-%E7%BA%A0%E9%94%99.yml)。不用改文件、不用懂 Git。
 
 ## 想直接发 PR 的话
 
