@@ -10,6 +10,9 @@
 
 [English](README.en.md) ｜ **中文**
 
+> 📍 **本仓库是 GitHub 的镜像。** 格式检查、统计检查、PDF / EPUB 构建都在 GitHub Actions 运行，
+> 因此这里的内容与下载产物可能滞后于 [GitHub 主仓库](https://github.com/yanwaiyue-name/students-howtolivebetter)。
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/状态-写作中-orange)
 ![Entry](https://img.shields.io/badge/条目-99%20条-blue)
