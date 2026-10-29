@@ -1,0 +1,44 @@
+feat: 支持 PWA 安装，并允许用户自定义桌面图标
+
+为什么做 PWA 而不是 APK：
+  APK 要下载、要过"未知来源"、要被国产 ROM 拦截，一本书配 10MB 外壳不划算。
+  PWA 点「添加到主屏幕」就有图标、全屏、离线可读，内容更新自动生效。
+
+## 新增
+
+1. PWA 三件套（由 build-html.mjs 自动生成，不是手工文件）
+   - manifest.webmanifest：standalone 全屏、主题色、192/512 图标
+   - sw.js：网络优先 + 断网回缓存
+   - icon-192.png / icon-512.png：从 assets/icon.svg 渲染
+
+2. 缓存版本用正文内容哈希
+   内容一改缓存名就变，旧缓存自动淘汰，不需要手工维护版本号。
+
+3. 自定义桌面图标
+   页脚「换个图标」→ 选图 → canvas 裁成正方形 → 换 favicon /
+   apple-touch-icon / 重写 manifest（blob URL）→ 存 localStorage。
+   「恢复默认」可撤销。
+
+   界面里明说了限制：桌面图标在安装时就固化了，换了图要重新添加
+   才会生效。不说这句等于骗用户。
+
+## 修了一个会静默吃掉整段脚本的 bug
+
+最初用 /^image\//.test(f.type) 判断文件类型。这句写在 JS 模板字符串里，
+\/ 被转义吃掉，生成出 ^image// 这种非法正则，SyntaxError 让整个
+IIFE 直接中断 —— 表现是按钮点了没反应，控制台还不报错。
+
+改成 f.type.indexOf('image/') !== 0，不依赖反斜杠。
+
+## 实测
+
+- Service Worker: active，作用域 /
+- 断网（停掉服务）后 fetch 仍返回 200，刷新后正文 6.2 万字完整渲染
+- 上传 800x500 非正方形测试图 → 裁成 512x512，favicon/apple-icon/
+  manifest 三处全部切换，刷新后保留
+- 「恢复默认」清空 localStorage 并还原 manifest
+
+## 注意
+
+PWA 必须 HTTPS 或 localhost。GitHub Pages 是 HTTPS 可以；
+用 file:// 直接打开会失效（Service Worker 不支持该协议）。
