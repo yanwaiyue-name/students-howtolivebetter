@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>学生版 · 高性价比人生指南</title>
+<meta name="description" content="写给 18–25 岁：在读的、快毕业的、刚毕业三年内的。每条写明成本、收益与证据来源。">
+
+<!-- PWA：让手机浏览器「添加到主屏幕」后像 App 一样全屏离线阅读 -->
+<meta name="theme-color" content="#1f6feb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="学生指南">
+<link rel="manifest" id="appManifest" href="manifest.webmanifest">
+<!-- icon / apple-touch-icon 的 href 会被下面的脚本按用户自定义图标覆盖 -->
+<link rel="apple-touch-icon" id="appleIcon" href="icon-192.png">
+<link rel="icon" id="favIcon" href="icon-192.png">
+
+<style>
+:root{--bg:#fdfcf9;--fg:#1a1a1a;--muted:#6b6b6b;--line:#e5e2da;--accent:#8a6d3b;--code:#f4f1ea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:16px/1.85 -apple-system,"Segoe UI","Microsoft YaHei","Noto Sans SC",sans-serif;
+-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:40px 20px 100px}
+header.book{border-bottom:2px solid var(--fg);padding-bottom:24px;margin-bottom:36px}
+header.book h1{font-size:30px;margin:0 0 10px;letter-spacing:-.5px}
+header.book p{margin:4px 0;color:var(--muted);font-size:14px}
+nav.toc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 24px;margin:0 0 44px}
+nav.toc h2{font-size:15px;margin:0 0 12px;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+nav.toc ol{margin:0;padding-left:20px}
+nav.toc li{margin:6px 0;font-size:15px}
+nav.toc a{color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line)}
+nav.toc a:hover{border-bottom-color:var(--accent);color:var(--accent)}
+nav.toc .count{color:var(--muted);font-size:13px}
+section.chapter{margin:0 0 64px;padding-top:12px}
+section.chapter > h2{font-size:24px;margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.intro{color:var(--muted);font-size:15px;margin:0 0 28px}
+.intro p{margin:10px 0}
+article.item{margin:0 0 34px;padding:0 0 0 16px;border-left:3px solid var(--line)}
+article.item:hover{border-left-color:var(--accent)}
+article.item h3{font-size:17px;margin:0 0 10px;line-height:1.6}
+article.item h3 .num{color:var(--accent);font-weight:700;margin-right:6px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.tag{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--code);color:var(--muted);white-space:nowrap}
+.tag.rev{background:#e8f4e8;color:#2d6a2d}
+.tag.half{background:#fdf0e0;color:#8a5a1a}
+.tag.irr{background:#fbe6e6;color:#8a2a2a}
+.dl{display:grid;grid-template-columns:76px 1fr;gap:4px 12px;margin:0;font-size:15px}
+.dl dt{color:var(--muted);font-size:13px;padding-top:2px}
+.dl dd{margin:0}
+.dl dd.plain{font-size:15.5px}
+.dl dd.evidence{font-weight:600}
+.dl dd.source{font-size:13px;color:var(--muted);word-break:break-all}
+.dl dd.note{font-size:13.5px;color:var(--muted)}
+code{background:var(--code);padding:2px 6px;border-radius:4px;font-size:.9em;
+font-family:ui-monospace,Consolas,monospace}
+a{color:var(--accent)}
+footer.end{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);
+color:var(--muted);font-size:13px;text-align:center}
+@media print{
+  body{background:#fff;font-size:11.5pt;line-height:1.7}
+  .wrap{max-width:none;padding:0}
+  nav.toc{page-break-after:always}
+  section.chapter{page-break-before:always}
+  article.item{page-break-inside:avoid}
+  a{color:#000;text-decoration:none}
+  .tag{border:1px solid #ccc;background:#fff!important;color:#000!important}
+}
+@media (max-width:600px){
+  .wrap{padding:24px 14px 70px}
+  .dl{grid-template-columns:1fr;gap:0}
+  .dl dt{margin-top:8px}
+}
+
+/* 安装引导条：固定在底部，避开 iPhone 底部安全区 */
+#installBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:99;
+  display:flex;align-items:center;gap:12px;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:var(--fg);color:var(--bg);font-size:14px;
+  box-shadow:0 -2px 12px rgba(0,0,0,.15)
+}
+#installBar[hidden]{display:none}
+#installBar span{flex:1;line-height:1.5}
+#installBar button{
+  border:0;border-radius:6px;padding:7px 14px;font:inherit;cursor:pointer;
+  background:var(--bg);color:var(--fg);font-weight:600
+}
+#installBar #installClose{background:transparent;color:var(--bg);font-size:20px;padding:0 6px;opacity:.7}
+@media print{ #installBar{display:none!important} }
+
+/* 自定义图标入口：安静地待在页脚，不抢正文注意力 */
+.iconbox{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.iconbox .ghost{
+  border:1px solid var(--line);background:transparent;color:var(--muted);
+  border-radius:8px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer
+}
+.iconbox .ghost:hover{border-color:var(--fg);color:var(--fg)}
+.iconbox .hint{font-size:12.5px;color:var(--muted);line-height:1.6}
+@media print{ .iconbox{display:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="book">
+    <h1>🎓 学生版 · 高性价比人生指南</h1>
+    <p>写给 18–25 岁：在读的、快毕业的、刚毕业三年内的</p>
+    <p>共 18 章 · 99 条 · 每条标明成本、收益与证据等级</p>
+  </header>
+
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+    <li><a href="#ch01">01. 大学四年里，哪几个决定是不可逆的</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch02">02. 绩点到底重不重要</a> <span class="count">（7 条）</span></li>
+    <li><a href="#ch03">03. 大专生的学历路怎么选</a> <span class="count">（7 条）</span></li>
+    <li><a href="#ch04">04. 毕业那一年，五条路各自要什么条件</a> <span class="count">（6 条）</span></li>
+    <li><a href="#ch05">05. 三方协议、档案、报到证：毕业后最容易出错的三件事</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch06">06. 校园贷、兼职骗局与培训贷</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch07">07. 实习、竞赛、项目：哪个更值钱</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch08">08. 考证：哪些真有用，哪些只是花钱</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch09">09. 撑不住的时候：求助是技术问题</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch10">10. 和家里相处：钱、边界、以及说不清的那些事</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch11">11. 社团、宿舍、同学关系：不想处也得处的那些年</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch12">12. AI 时代：普通人怎么用，怎么不被坑</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch13">13. 校内经济与熟人行骗</a> <span class="count">（5 条）</span></li>
+    <li><a href="#ch14">14. 找实习、求职：从投递到入职的完整流程</a> <span class="count">（6 条）</span></li>
+    <li><a href="#ch15">15. 地方政策与补贴：能领的钱，去哪查</a> <span class="count">（6 条）</span></li>
+    <li><a href="#ch16">16. 身体：睡眠、性健康、烟酒</a> <span class="count">（6 条）</span></li>
+    <li><a href="#ch17">17. 和学校、辅导员、导师打交道</a> <span class="count">（6 条）</span></li>
+    <li><a href="#ch18">18. 把话说清楚：模糊表达的代价</a> <span class="count">（5 条）</span></li>
+    </ol>
+  </nav>
+
+  <section class="chapter" id="ch01">
+    <h2>01. 大学四年里，哪几个决定是不可逆的</h2>
+    <div class="intro"><p>这一章不讲怎么努力，只回答一个问题：<strong>哪些决定做错了，后面没有补救的机会。</strong></p><p>成年人做选择，代价多是钱和时间；学生做选择，代价常常是「路径」。路径一旦锁定，后面每一步都要绕着它走。这一章把常见的选择按「能不能退回来」分三档，每一档给出具体的法规依据和补救窗口。</p><p>本章条目：</p><p>- 第 1 条：专业选错，有两条法定出口，但都有时间窗口</p><p>- 第 2 条：转学的条件比转专业苛刻得多</p><p>- 第 3 条：退学不等于清零，学分可以带走（很多人不知道）</p><p>- 第 4 条：最长学习年限是硬约束，休学不是无限期</p><p>- 第 5 条：毕业前一年是多个选项同时关闭的时间点</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>专业选错，有两条法定出口，但都在大一大二</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱。要花时间准备（多数学校要求成绩排名靠前），要持续投入一个学期以上。</dd>
+      <dt>说人话</dt><dd class="plain">专业不满意，法律给了你「转专业」这个出口，但具体门怎么开由学校自己定。学校必须制定办法、必须公示，你按公示的条件去申请就行。注意两个例外：一是通过特殊招生形式录取的（如定向、专项计划），录取前有约定的不能转；二是各校一般把申请窗口放在大一或大二，过了就没有了。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》（教育部令第 41 号）第二十一条：「学生在学习期间对其他专业有兴趣和专长的，可以申请转专业；以特殊招生形式录取的学生，国家有相关规定或者录取前与学校有明确约定的，不得转专业。」同条还规定：「学校应当制定学生转专业的具体办法，建立公平、公正的标准和程序，健全公示制度。」以及「休学创业或退役后复学的学生，因自身情况需要转专业的，学校应当优先考虑。」</dd>
+      <dt>为什么</dt><dd class="why">法规只给了「可以申请」的权利，把条件制定权留给了学校。所以真正决定你能不能转的，是你本校教务处每年发布的那份转专业实施细则，而不是这条法规。法规的作用是：学校不能不公示、不能没有标准。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第二十一条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">具体条件（成绩排名前多少、能不能跨学科门类、要不要笔试面试、有没有名额限制）各校差异极大，必须查本校教务处当年的通知，不能照搬别的学校经验。退伍和休学创业者有优先权，这是法规明文，不是学校恩惠。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>转学的门槛比转专业高一个数量级</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱，但时间成本高，且成功率低。多数人不应把它当作主要方案。</dd>
+      <dt>说人话</dt><dd class="plain">转专业是「同一所学校内部换专业」，转学是「换一所学校」。后者法规写得很死：一般应当在录取学校完成学业，只有患病、有特殊困难、特别需要、或确实不适应本校学习要求这几种情况才能申请。而且有四类情况明确不许转。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第二十二条：「学生一般应当在被录取学校完成学业。因患病或者有特殊困难、特别需要，无法继续在本校学习或者不适应本校学习要求的，可以申请转学。」同条列出不得转学的情形，包括：「（一）入学未满一学期或者毕业前一年的；（二）高考成绩低于拟转入学校相关专业同一生源地相应年份录取成绩的；（三）由低学历层次转为高学历层次的」（原文续有第四项）。</dd>
+      <dt>为什么</dt><dd class="why">第二条是关键——你的高考分数必须达到想转入学校同专业、同生源地、同年份的录取线。这一条基本封死了「低分进、高分学校出」的路径，所以转学在实践中极少成功。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第二十二条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">入学未满一学期、以及毕业前一年，这两个时间点都不能申请转学。如果你的诉求其实是「换个环境」，先看第 1 条（转专业）和本章第 4 条（休学），成本低得多。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>退学不等于清零，学分可以带走</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱。了解这一条只花几分钟。</dd>
+      <dt>说人话</dt><dd class="plain">很多人以为退学就全白读了。法规明确：因退学等中止学业的，已修课程和已获学分应当予以记录；以后重新参加入学考试、符合录取条件、再次入学的，这些学分经录取学校认定可以承认。「可以」不是「必须」，但你有权利去申请认定。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第十八条：「学生因退学等情况中止学业，其在校学习期间所修课程及已获得学分，应当予以记录。学生重新参加入学考试、符合录取条件，再次入学的，其已获得学分，经录取学校认定，可以予以承认。具体办法由学校规定。」</dd>
+      <dt>为什么</dt><dd class="why">这条的实际作用是——如果你真的要走「退学重考」这条路，你之前的学分不是完全作废，取决于新学校认不认。所以退学前应当先去问目标学校教务处的学分认定办法，而不是默认归零。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第十八条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">认定权在新学校，各校标准不同，有的只认公共课，有的按课程大纲比对。做决定前先拿到目标学校的书面答复，别只听招生老师口头说。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>最长学习年限是硬约束，休学不是无限期</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">休学期间通常仍要按年缴纳部分费用（各校不同），且推迟毕业意味着推迟进入就业市场。</dd>
+      <dt>说人话</dt><dd class="plain">你可以分阶段完成学业，但必须在学校规定的最长学习年限内读完——这个年限包含休学和保留学籍的时间。也就是说，休学不是「暂停键」，是「倒计时继续走」。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第二十五条：「学生可以分阶段完成学业，除另有规定外，应当在学校规定的最长学习年限（含休学和保留学籍）内完成学业。学生申请休学或者学校认为应当休学的，经学校批准，可以休学。休学次数和期限由学校规定。」第二十六条进一步规定：「学校可以根据情况建立并实行灵活的学习制度。对休学创业的学生，可以单独规定最长学习年限，并简化休学批准程序。」</dd>
+      <dt>为什么</dt><dd class="why">「含休学和保留学籍」这七个字是关键。很多人以为休学一年就等于总时限延长一年，实际上多数学校是把休学时间算进总年限里的，休完回来发现剩余时间不够修完课程。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第二十五、二十六条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">第二十六条给了创业休学的特殊通道——学校「可以」单独规定最长学习年限。这是「可以」不是「应当」，也就是学校有权不给你延长。休学前务必书面确认：这次休学是否计入总年限、回来还剩几年。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>毕业前一年，是多个选项同时关闭的时间点</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱。这一条的价值在于让你提前一年知道。</dd>
+      <dt>说人话</dt><dd class="plain">法规里「毕业前一年」这个词出现了不止一次，每次出现都意味着一扇门关上。最典型的是转学：入学未满一学期、或者已到毕业前一年，都不能申请转学。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第二十二条列明的不得转学情形中，第一项即「入学未满一学期或者毕业前一年的」。这意味着：大一第一学期之前不能转（还没入学籍），大四基本不能再转。</dd>
+      <dt>为什么</dt><dd class="why">学校要在毕业前完成学籍、档案、学历电子注册等一系列流程，毕业前一年再变动学籍会打乱整套流程。所以这不是针对个人的限制，是流程性的硬边界。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第二十二条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">这一条只覆盖「转学」。转专业、休学、辅修等各自的截止时间由学校规定，需要单独查本校细则。本章想说明的是：凡是涉及学籍变动的动作，越早做选项越多。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch02">
+    <h2>02. 绩点到底重不重要</h2>
+    <div class="intro"><p>这一章不是劝你学习，而是回答：<strong>绩点在不同去向里的权重，到底差多少。</strong></p><p>网上关于绩点的说法互相矛盾——「绩点没用」和「绩点决定一切」都有人讲。矛盾的原因是他们说的不是同一件事：绩点对保研是硬门槛，对考研几乎没用，对找工作看行业，对出国是第一道筛子。这一章按去向拆开算。</p><p>本章条目：</p><p>- 第 1 条：绩点的四种算法，同一份成绩能算出不同数字</p><p>- 第 2 条：保研——绩点是唯一硬门槛</p><p>- 第 3 条：考研——初试不看绩点，但复试会看</p><p>- 第 4 条：出国——GPA 是第一道筛子，且几乎不可补救</p><p>- 第 5 条：找工作——分行业，大部分岗位不看</p><p>- 第 6 条：挂科的三种后果，严重程度差别很大</p><p>- 第 7 条：绩点已经低了，哪些路还开着</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>绩点有四种算法，同一份成绩能差出 0.3</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱，花十分钟。</dd>
+      <dt>说人话</dt><dd class="plain">同一门课 85 分，在不同算法下换算出的绩点不一样。国内常见四种：标准 4.0 制、北大 4.0 制、5 分制、以及各校自定的算法。出国申请时，对方学校通常要求你按他们的标准重新算，或者用 WES 之类的认证机构算。这意味着：你学校成绩单上的绩点，不一定是别人看的那个数。</dd>
+      <dt>收益</dt><dd class="gain">一个具体例子——某课 85 分：标准 4.0 制约 3.5（90-100=A=4.0，80-89=B=3.0，部分学校细分 A-=3.7）；北大 4.0 制 85 分对应 3.5 左右；百分制加权平均则是 85。同一份成绩，在不同口径下可能相差 0.2–0.3。</dd>
+      <dt>为什么</dt><dd class="why">绩点本质是一个分段映射函数，分段边界由各校自定。所以「我绩点 3.2」这句话，不知道算法就没有意义。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">各高校教务处学籍管理规定（算法各校自定，无全国统一文件）。教育部《普通高等学校学生管理规定》（教育部令第 41 号）第十二条仅规定「学校应当健全学生学业成绩和学籍档案管理制度」，未规定换算方法. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">出国申请时，务必用对方学校指定的算法重算，或用 WES/ECE 认证。用本校算法直接报数，可能被判为虚报。查本校算法：教务处官网搜「绩点计算办法」。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>保研：绩点在所有去向里权重最高，且名额是按学校切的</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">三年持续投入，代价是放弃实习、竞赛、社团等其它积累。</dd>
+      <dt>说人话</dt><dd class="plain">推荐免试研究生（保研）的名额由学校按专业分配，分配依据主要是学业成绩排名。这是所有去向里绩点权重最高的一个——它几乎不看别的，就看排名，而且排名是连续的，你比前一名差 0.01 就是差。</dd>
+      <dt>收益</dt><dd class="gain">推免名额不是「谁优秀谁上」，而是<strong>按学校层次切块分配</strong>：设有研究生院的高校名额比例最高，其次是「211 工程」高校，其他高校最低。这意味着同样努力，在不同层次学校的天花板不同。推免总名额受教育部年度下达的限制，但<strong>具体比例逐年调整，本书不写固定数字</strong>——请查本校研究生院当年公布的推免工作办法。</dd>
+      <dt>为什么</dt><dd class="why">这是本书反复强调「口径」的原因。保研是典型的半可逆选择：大一大二不准备，大三再想保研已经来不及；但反过来，保研失败还能考研，所以不是不可逆。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">推免总量由教育部按年度下达，各校分配办法由研究生院公布。<strong>本书未找到可长期引用的教育部原文链接（相关文件已下架），因此不列具体比例数字</strong>。查询入口：中国研究生招生信息网 <a href="https://yz.chsi.com.cn/">https://yz.chsi.com.cn/</a>（检索路径：研招网 → 招生政策 / 管理规定栏目（每年更新））</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级不是 A 级——因为原始文件未能核实到稳定链接。<strong>具体名额、排名规则、竞赛加分、破格条件，全部由本校研究生院当年的推免办法规定</strong>，必须查那份文件，任何「全国统一比例」的说法都不可信（含本书此前的版本）。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>考研：初试不看绩点，但复试会看</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">备考半年到一年，资料与报名费数百至数千元。</dd>
+      <dt>说人话</dt><dd class="plain">考研初试是全国统考或学校自命题，报名条件里没有绩点要求——只要你能拿到毕业证（或应届身份），就能报。所以绩点低不挡你考研。但复试环节，导师能看到你的本科成绩单，部分学校复试评分表里有「本科学习成绩」一项。</dd>
+      <dt>收益</dt><dd class="gain">报名条件依据《2026 年全国硕士研究生招生工作管理规定》（每年更新）。该规定对报考条件的要求集中在学历层次（应届本科毕业生、本科毕业、同等学力等），未设绩点门槛。</dd>
+      <dt>为什么</dt><dd class="why">初试是标准化笔试，用分数排序，绩点无关。复试是学校自主环节，评分维度由学校自定，学业表现通常只占其中一小部分权重，且不必然是硬性淘汰项。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2025). 全国硕士研究生招生工作管理规定（年度发布，报名条件条款）. <a href="https://yz.chsi.com.cn/">https://yz.chsi.com.cn/</a>（检索路径：研招网 → 招生政策 / 管理规定栏目（每年更新））</dd>
+      <dt>备注</dt><dd class="note">本条 A 级只针对「报名条件不设绩点门槛」这一点。「复试看不看绩点」是各校自定，<strong>没有全国统一数据</strong>，属经验判断，必须查目标院校研究生院近三年的复试录取工作细则。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>出国：GPA 是第一道筛子，且几乎不可补救</h3>
+      <div class="tags"><span class="tag">钱 · 多</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">申请费、语言考试、材料认证等，数千至数万元；时间成本从大二开始准备。</dd>
+      <dt>说人话</dt><dd class="plain">海外院校的录取是「先筛后看」——GPA 不达标，你的文书和推荐信根本到不了评审手里。而且 GPA 是四年累积的，大三结束时基本定型，大四再刷也拉不动多少。</dd>
+      <dt>收益</dt><dd class="gain">多数英语国家研究生项目设有最低 GPA 门槛（常见 3.0/4.0 或同等），低于门槛的申请通常在初筛阶段被系统过滤。这一条没有统一的官方文件——各校自定，需查目标项目官网的 admission requirements。</dd>
+      <dt>为什么</dt><dd class="why">这是所有去向里「口径」最差的——不可逆。保研失败还能考研，考研失败还能工作，但 GPA 定型后，出国这条路在四年内没有第二次机会。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开的统一数据——各院校 admission requirements 由学校自定，无跨校统计。个别院校可在官网查到明文要求，例：<a href="https://www.grad.washington.edu/">https://www.grad.washington.edu/</a>（检索路径：研究生院 → Admissions → English proficiency / GPA requirements）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，没有权威数据支撑——门槛完全由各校自定，且不同国家、不同项目差异很大。有些项目对后两年 GPA 单独计算（last 60 credits），这种情况下大三大四刷分仍有效——务必查目标项目的具体规则。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>找工作：分行业，大部分岗位不看</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱。</dd>
+      <dt>说人话</dt><dd class="plain">企业招聘时，绩点是筛选条件之一，但权重远低于实习经历和项目经验。少数行业例外：国企、部分外企管培生、金融行业校招会设绩点门槛（常见 3.0 或专业前 30%）。</dd>
+      <dt>收益</dt><dd class="gain">没有一个覆盖全行业的官方统计能说明「绩点在招聘中的权重」。可以确认的是：多数互联网技术岗的笔试与面试不设绩点门槛；而部分国企、银行的校招公告会明确写「本科成绩排名前 XX%」作为报名条件。</dd>
+      <dt>为什么</dt><dd class="why">企业招人的核心是「能不能干活」，绩点只是「学习能力」的间接信号。有实习和项目时，企业会直接看证据，不需要间接信号。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开的统一统计数据。判断依据只能是各企业校招公告的实际要求，需逐个查看目标企业当年的招聘简章，例：<a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。必须自己核实——去目标企业的校招官网，看它写的报名条件。如果有「成绩排名」要求，那就是硬门槛；没写就是不要求。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>挂科的三种后果，严重程度差一个数量级</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">重修要交重修费（各校不同，常见每学分数十至数百元），并占用一个学期的时间。</dd>
+      <dt>说人话</dt><dd class="plain">「挂科」不是一件事，是三件严重程度完全不同的事：① 挂了一门必修课，补考或重修通过即可，影响有限；② 挂科导致学分不够，延期毕业，影响就业与升学时间线；③ 因学业问题被退学，这是最严重的。多数人遇到的是第一种，但网上的恐慌来自第三种。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第十八条规定：「学生因退学等情况中止学业，其在校学习期间所修课程及已获得学分，应当予以记录。」同规定第二十五条要求学生在最长学习年限内完成学业（含休学）。此外，第三十条规定了学校可予退学的情形，其中包括「学业成绩未达到学校要求或者在学校规定的年限内未完成学业的」。</dd>
+      <dt>为什么</dt><dd class="why">法规把「什么情况算学业不合格」的判定权交给了学校，所以每所学校的退学红线不同（常见：一学年挂科达一定学分、累计不及格学分超限）。真正的风险不是挂一门，而是累计。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第十八、二十五、三十条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">务必查本校《学生学籍管理规定》里的退学条款——这是唯一能告诉你「挂多少会出事」的文件。补考与重修的记录方式也不同：部分学校会在成绩单上标注「重修」，这对出国申请有影响。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c7">
+      <h3><span class="num">7.</span>绩点已经低了，这几条路还开着</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">不花钱，但要投入时间重建竞争力。</dd>
+      <dt>说人话</dt><dd class="plain">绩点低不等于路都堵死。按「不受绩点影响」排序，还开着的路有：① 考研（初试不看绩点）；② 找工作（多数岗位看项目与实习）；③ 考公考编（看笔试面试成绩）；④ 专升本/自考（大专生路径，见第 8 章）；⑤ 转专业（部分学校允许，看本校细则）。受影响最大的是保研和出国。</dd>
+      <dt>收益</dt><dd class="gain">上述判断的依据分散在本书各章，核心逻辑是：凡是以「标准化考试分数」为筛选手段的路径，绩点权重都低；凡是以「本科综合表现」为筛选手段的路径，绩点权重都高。</dd>
+      <dt>为什么</dt><dd class="why">绩点的作用是「在没有其它证据时，用来预测你的能力」。一旦你有了更直接的证据（考研分数、项目作品、实习经历），绩点的解释力就下降了。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">综合自本章第 2–5 条所列来源；本条为策略性归纳，<strong>没有独立的权威数据</strong>。各路径的具体条件见对应章节，例：<a href="https://yz.chsi.com.cn/">https://yz.chsi.com.cn/</a>（检索路径：研招网 → 招生政策 / 管理规定栏目（每年更新））</dd>
+      <dt>备注</dt><dd class="note">这条是策略性总结，不是官方结论。真正的决策要落到具体路径上：先确定你要走哪条路，再去查那条路的硬性条件，而不是笼统地问「绩点重不重要」。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch03">
+    <h2>03. 大专生的学历路怎么选</h2>
+    <div class="intro"><p>这一章只写给一类人：<strong>在读或刚毕业的专科生。</strong></p><p>网上的学历建议几乎都是本科视角，"考研""保研""出国读研"默认你已经站在本科线上。专科生的真实处境是另一套规则：能走哪几条路、每条路要多久、拿到的证和本科有什么区别、用人单位认不认。这一章只算这几件事。</p><p>本章条目：</p><p>- 第 1 条：先分清"专升本"其实指两种完全不同的考试</p><p>- 第 2 条：统招专升本——唯一能拿到"全日制本科"的路</p><p>- 第 3 条：自考本科——含金量低一档，但门槛也低</p><p>- 第 4 条：成考与国开——学历能用在哪里，用不到哪里</p><p>- 第 5 条：专升本的三种时间成本对比</p><p>- 第 6 条：学历证书怎么在线验证（用人单位都在查这个）</p><p>- 第 7 条：如果只想尽快工作，这些证比学历更直接</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>"专升本"是两种考试，别混为一谈</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一条只花十分钟。选错路的代价是 1–3 年。</dd>
+      <dt>说人话</dt><dd class="plain">日常说"专升本"，指的可能是两种东西：一是<strong>统招专升本</strong>（各省组织的选拔考试，考上后进本科院校全日制读两年，拿全日制本科毕业证）；二是<strong>成人学历</strong>（自考、成考、国开），属于非全日制。两者拿到的毕业证在用人单位的认可度、能不能考某些岗位、能不能继续考研上，规则都不一样。</dd>
+      <dt>收益</dt><dd class="gain">统招专升本是省级统一选拔考试，考上后进入本科阶段全日制学习，毕业证书为普通高等教育本科毕业证（会标注专科起点）。成人学历属于成人高等教育，证书性质不同。这两类在国家学历体系里是并列的，由不同文件规范。</dd>
+      <dt>为什么</dt><dd class="why">这是本章最重要的一条，因为它是<strong>不可逆的口径选择</strong>。统招专升本通常只允许应届专科毕业生报考（部分省份放宽到毕业两年内），错过应届这一年，多数省份就没有第二次机会；而成人学历随时可以报。所以"什么时候选哪条"比"哪条更好"更关键。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第十八条关于学分认定与学籍记录）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a>；高等教育自学考试官方入口，中国教育考试网. <a href="https://zikao.neea.edu.cn/">https://zikao.neea.edu.cn/</a>（检索路径：中国教育考试网-自学考试 → 政策规定 / 考试计划栏目）</dd>
+      <dt>备注</dt><dd class="note">统招专升本的具体报考条件（是否限应届、能否跨专业、是否限报考次数）<strong>由各省教育厅单独规定，全国不统一</strong>，必须查你所在省份当年发布的专升本工作通知。这条没有全国统一答案。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>统招专升本：唯一能拿到"全日制本科"的路</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">本科阶段两年学费（公办院校常见数千元/年，民办院校可能上万/年），加上备考时间半年至一年。</dd>
+      <dt>说人话</dt><dd class="plain">这条路的核心价值在于"全日制"三个字。很多岗位——尤其是公务员、事业单位、国企——的招聘公告里写的是"全日制本科及以上"，非全日制学历连报名资格都没有。统招专升本拿到的是全日制本科，这是它和自考本科最本质的区别。</dd>
+      <dt>收益</dt><dd class="gain">考上后进入本科院校全日制学习两年，毕业时获得普通高等教育本科毕业证书，学历层次由专科变为本科。在学历层次上，它与普通本科毕业生同属"本科"；在证书表述上，会注明专科起点。</dd>
+      <dt>为什么</dt><dd class="why">这条路的稀缺性来自"名额"和"应届身份"两个限制。名额由各省按当年专科毕业生规模下达，比例不高；应届身份意味着只有一次机会。两个限制叠加，使它成为专科生路径里性价比最高、但窗口最窄的一条。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">各省教育厅每年发布的普通高校专升本工作通知（省级文件，全国不统一）。官方查询入口：教育部职业教育与成人教育司. <a href="http://www.moe.gov.cn/s78/A07/">http://www.moe.gov.cn/s78/A07/</a></dd>
+      <dt>备注</dt><dd class="note"><strong>录取比例、可报考院校、能否跨专业、是否限应届，全部由省级文件规定，且每年可能调整</strong>。这条是 B 级不是 A 级，因为没有全国统一的原始文件可引。务必查你所在省教育厅当年 3–4 月发布的通知。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>自考本科：含金量低一档，但门槛也低</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">报考费按科目收取（每科数十元），教材自理；时间成本弹性很大，快的两年考完，慢的五六年。</dd>
+      <dt>说人话</dt><dd class="plain">自考是"考过一门算一门"，没有入学考试，也没有固定学制。全部科目通过后申请毕业，拿到的是成人高等教育本科毕业证。它不能替代全日制学历，但对已经在工作、需要"有个本科文凭"的人来说，是成本最低的路。</dd>
+      <dt>收益</dt><dd class="gain">高等教育自学考试由全国统一组织，各省自考办负责具体实施。毕业证书由省自考委颁发、主考院校副署，学历国家承认，可在学信网查询。</dd>
+      <dt>为什么</dt><dd class="why">自考的"可逆"体现在时间上——什么时候开始都行，考不过可以重考，没有应届限制。代价是它不改变你的"全日制/非全日制"属性，所以在卡全日制的岗位上仍然无效。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">高等教育自学考试官方入口（中国教育考试网，教育部教育考试院主办）. <a href="https://zikao.neea.edu.cn/">https://zikao.neea.edu.cn/</a>（检索路径：中国教育考试网-自学考试 → 政策规定 / 考试计划栏目）</dd>
+      <dt>备注</dt><dd class="note">自考本科申请毕业时通常需要提供专科毕业证（即"专本衔接"），具体衔接规则各省不同。部分专业有实践课、论文答辩环节，时间会比预期长。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>成考与国开：能用在哪里，用不到哪里</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 小</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">成考需参加全国统考（每年一次），学费按年缴；国开（原电大）免试入学，按学分收费。</dd>
+      <dt>说人话</dt><dd class="plain">这两种都属于成人学历，比自考容易，但社会认可度也最低。它们的真实用途是：满足"必须有本科学历"的硬性门槛（如某些资格考试、职称评定、单位内部晋升），而<strong>不是</strong>用来求职竞争。</dd>
+      <dt>收益</dt><dd class="gain">成人高等教育与开放教育均属国民教育系列，学历国家承认、学信网可查。这一点是确定的——问题不在于"是不是真学历"，而在于"用人单位认不认"。</dd>
+      <dt>为什么</dt><dd class="why">学历的作用分两层：一层是"资格门槛"（有没有资格报名），一层是"竞争排序"（在候选人里排第几）。成人学历在第一层有效，在第二层基本无效。想清楚你要的是哪一层，就不会花冤枉钱。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可用于跨行业比较「成人学历认可度」。判断依据只能来自具体岗位的招聘公告原文，以及各类资格考试的报考条件，例：<a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。凡是有人告诉你"某学历含金量 XX%"，都不可信——因为认可度是分岗位、分单位的，不存在统一数值。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>三条路的时间成本对比</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">这一条不花钱，但能帮你少走 2–3 年弯路。</dd>
+      <dt>说人话</dt><dd class="plain">从"专科在读"到"拿到本科证"，三条路的时间账：① 统招专升本——专科 3 年 + 本科 2 年 = 5 年，全日制；② 自考本科——可与专科并行，最快专科毕业时同时拿本科证，但通过率取决于个人；③ 成考——专科毕业后 2.5–3 年，非全日制。</dd>
+      <dt>收益</dt><dd class="gain">三条路的"总耗时"看起来接近，但<strong>性质完全不同</strong>：统招是全日制在校，自考是自学考试，成考是业余函授。时间相近而认可度差距大，这正是很多人选错的地方。</dd>
+      <dt>为什么</dt><dd class="why">真正的差别不在时长，在"你能不能脱产在校"。如果你已经工作、必须赚钱，统招专升本就不是选项；如果你还在读、家里能支持两年，那就是性价比最高的一条。所以这条的答案是"看你的约束条件"，不是"哪条更好"。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">时间安排依据各省级专升本通知、自考考试计划、成人高考学制规定，均为省级或校级文件，无全国统一口径。查询入口：中国教育考试网 <a href="https://zikao.neea.edu.cn/">https://zikao.neea.edu.cn/</a>（检索路径：中国教育考试网-自学考试 → 政策规定 / 考试计划栏目）</dd>
+      <dt>备注</dt><dd class="note">具体年限以你所在省份和报考院校为准。自考"最快两年"是理论值，实际通过率因人而异；成考学制各省各校略有差异。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>学历怎么在线验证（用人单位都在查这个）</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">免费，几分钟。</dd>
+      <dt>说人话</dt><dd class="plain">不管是全日制还是成人学历，用人单位验证的方式都一样：上学信网查。所以你要做的第一件事是——毕业前就确认自己的学籍能查到，毕业后能生成学历证书电子注册备案表。</dd>
+      <dt>收益</dt><dd class="gain">中国高等教育学生信息网（学信网）是教育部指定的学历查询唯一网站。学籍查询、学历查询、学历认证报告、在线验证报告都在这里办理。求职时企业提供的"学历验证"链接，指向的也是这个系统。</dd>
+      <dt>为什么</dt><dd class="why">这条的实际价值在于排错。很多人毕业多年后才发现学信网上查不到自己的学历（常见于早年民办院校、部分网络教育），那时候补办非常麻烦。<strong>在读期间就该查一次</strong>。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">中国高等教育学生信息网（学信网，教育部学生服务与素质发展中心主办），学籍学历查询入口. <a href="https://www.chsi.com.cn/xlcx/index.jsp">https://www.chsi.com.cn/xlcx/index.jsp</a>；学历认证入口. <a href="https://www.chsi.com.cn/xlrz/index.jsp">https://www.chsi.com.cn/xlrz/index.jsp</a></dd>
+      <dt>备注</dt><dd class="note">应届毕业生在毕业当年通常可查"学籍"，毕业后转为"学历"。若查不到，第一时间联系学校教务处学籍科，不要等到求职时才发现。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c7">
+      <h3><span class="num">7.</span>只想尽快工作的话，这些比学历更直接</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">考证费用从数百到数千不等，备考时间 1–6 个月。</dd>
+      <dt>说人话</dt><dd class="plain">如果你的目标是"尽快有份能养活自己的工作"，而不是"要一个本科文凭"，那么把两年时间花在技能和证书上，回报可能高于专升本。前提是：你选的是<strong>有明确准入门槛的证</strong>，不是"听起来有用"的证。</dd>
+      <dt>收益</dt><dd class="gain">判断一个证值不值，看三件事：① 是否在《国家职业资格目录》里（在目录里 = 有法定效力）；② 招聘公告里是否明确要求（写明"持 XX 证优先"才算）；③ 有没有对应的岗位在招。三条都满足才值得考。</dd>
+      <dt>为什么</dt><dd class="why">很多人考了一堆证却找不到工作，是因为那些证不在目录里、招聘也不看。反过来，像电工、焊工、消防设施操作员这类有法定准入要求的，反而直接对应岗位。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">国家职业资格目录由人力资源社会保障部公布并动态调整，查询入口：中华人民共和国人力资源和社会保障部. <a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">目录会调整（部分职业已退出目录），必须以最新版为准。"考证热"里大量证书不在目录内，考了不产生法定效力——这一点是很多人踩过的坑。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch04">
+    <h2>04. 毕业那一年，五条路各自要什么条件</h2>
+    <div class="intro"><p>这一章不评价哪条路好，只把五条主流去向的<strong>法定门槛</strong>摆在一起，让你先知道自己有没有资格。</p><p>很多人到报名前一天才发现"我不符合条件"——学历不够、年龄超了、专业不对口。这些条件都写在文件里，提前一年查是有意义的。这一章按"门槛能不能改"排序：能改的在前，改不了的在后。</p><p>本章条目：</p><p>- 第 1 条：考公考编的年龄与学历双门槛，卡住的人最多</p><p>- 第 2 条：基层项目（三支一扶、西部计划）是给应届生的缓冲带</p><p>- 第 3 条：国企校招只在应届这一年开门</p><p>- 第 4 条：升学（考研/专升本）的门槛最低，但时间成本最高</p><p>- 第 5 条：灵活就业与个体户，没有门槛但你得自己交社保</p><p>- 第 6 条：应届生身份到底值多少，怎么才算没丢</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>考公考编：年龄 18–35、学历大专以上，这两条卡住的人最多</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">报名费数十至两百元，备考 3–12 个月，多数人需要脱产或半脱产。</dd>
+      <dt>说人话</dt><dd class="plain">公务员和事业单位的入门条件是明文写死的：年龄 18 到 35 周岁，学历大专以上。这两条是硬门槛，不符合连报名都进不去。年龄这条卡的是毕业晚、或者工作几年后想转行的人；学历这条卡的是专科生（专科可以报，但岗位少很多）。</dd>
+      <dt>收益</dt><dd class="gain">《公务员录用规定》第十八条规定报考条件包含「年龄为十八周岁以上，三十五周岁以下」以及「具有大学专科以上文化程度」；同条规定，上述条件「经省级以上公务员主管部门批准，可以适当调整」。第十九条列出五类不得报考的人员，包括因犯罪受过刑事处罚的、被开除公职的、被依法列为失信联合惩戒对象的等。事业单位方面，《事业单位人事管理条例》第八条规定「事业单位新聘用工作人员，应当面向社会公开招聘」。</dd>
+      <dt>为什么</dt><dd class="why">注意「可以适当调整」这五个字——它意味着年龄和学历条件不是绝对刚性，部分艰苦边远地区、特殊岗位会放宽。但放宽的决定权在省级以上主管部门，不是招人单位自己说了算，所以要查具体公告而不是猜。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">中共中央组织部 (2019). 公务员录用规定（第十八、十九条）. <a href="https://www.12371.cn/2020/01/08/ARTI1578447606460158.shtml">https://www.12371.cn/2020/01/08/ARTI1578447606460158.shtml</a>；国务院 (2014). 事业单位人事管理条例（国务院令第 652 号，第八条）. <a href="https://www.gov.cn/zhengce/zhengceku/2014-05/15/content_8810.htm">https://www.gov.cn/zhengce/zhengceku/2014-05/15/content_8810.htm</a></dd>
+      <dt>备注</dt><dd class="note">具体岗位还可能有专业限制、户籍限制、基层工作经历要求，这些写在各年度招考公告的职位表里，不在这两个文件中。想走这条路，提前一年去查目标省份去年的职位表，看看自己能报的岗位有多少——这个数字比任何建议都实在。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>基层项目：给应届生的缓冲带，但不是免费的</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">服务期通常 1–3 年，期间收入较低（有生活补贴），地点多在乡镇基层。</dd>
+      <dt>说人话</dt><dd class="plain">"三支一扶""西部计划"这类基层项目，本质是拿几年时间换一个身份和一段经历。它们的价值在于：服务期满后在考公考编时有定向岗位、在考研时有加分或专项计划。代价是这几年你不在主流就业市场里。</dd>
+      <dt>收益</dt><dd class="gain">这类项目由共青团中央、人力资源社会保障部等部门分别组织，每年的实施方案会写明招募对象、服务期限、待遇标准和期满优惠政策。这些政策<strong>逐年调整</strong>，需要看当年文件。</dd>
+      <dt>为什么</dt><dd class="why">它的价值高度依赖"你是否打算走体制内"。如果你本来就打算考公，那服务期满的定向岗位是实打实的优势；如果你打算进互联网公司，这两年经历的溢价很低。所以这条的答案是条件式的，不是绝对的。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">招募与优惠政策见各年度实施方案（共青团中央、人力资源社会保障部发布，逐年更新，无长期稳定的单一文件）。查询入口：中国青年网（西部计划）. <a href="http://xibu.youth.cn/">http://xibu.youth.cn/</a>（检索路径：西部计划官网 → 招募公告 / 政策问答栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——具体补贴金额、期满加分幅度、定向岗位比例，每年都可能变。<strong>不要用往年的政策做决定</strong>，务必查你毕业那一年的实施方案。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>国企校招：只在应届这一年开门</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">准备简历与笔试的时间，秋招通常从大四上学期 9 月开始。</dd>
+      <dt>说人话</dt><dd class="plain">「校招」和「社招」是两条完全不同的通道。校招只面向应届毕业生（部分地区放宽到毕业两年内），社招要求工作经验。这意味着：<strong>错过校招，进大企业的难度会陡增</strong>，因为社招通道要求你有相关经验，而应届生没有。</dd>
+      <dt>收益</dt><dd class="gain">这不是法规层面的限制，而是企业招聘实践形成的惯例。国企、央企、大型民企的校园招聘通常有明确的"应届生"定义（毕业当年，部分放宽至两年择业期内）。</dd>
+      <dt>为什么</dt><dd class="why">这条的残酷在于它的不可逆性——校招窗口只有一两次（秋招、春招），且与"应届生身份"绑定。所以本章第 6 条（应届生身份）才那么重要。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开的统一文件规定"校招只招应届"——这是企业招聘惯例，具体定义见各企业校招公告。查询入口：国家大学生就业服务平台. <a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>支撑。各企业对"应届生"的界定不同（有的看毕业年份，有的看是否缴纳过社保），必须查目标企业的招聘公告原文。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>升学：门槛最低，时间成本最高</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">考研备考半年到一年；专升本是专科再读两年；两者都要放弃同期的工作收入。</dd>
+      <dt>说人话</dt><dd class="plain">在所有去向里，升学的门槛是唯一不限年龄、不限工作经验的——只要你能满足学历要求（考研要求本科或同等学力，专升本要求应届专科）。它把"筛选"推迟到了考试那一天，而不是在报名时就卡住你。</dd>
+      <dt>收益</dt><dd class="gain">考研的报名条件集中在学历层次（应届本科毕业生、本科毕业、同等学力等），不设绩点门槛、不设年龄上限。专升本则是省级选拔，条件见第 03 章。</dd>
+      <dt>为什么</dt><dd class="why">这条的"可逆"体现在——考不上可以再考，也可以先工作再考。代价是时间，但不是机会的永久丧失。这就是它和校招（不可逆）最本质的区别。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2025). 全国硕士研究生招生工作管理规定（年度发布，报考条件条款）. <a href="https://yz.chsi.com.cn/">https://yz.chsi.com.cn/</a>；专升本见本书第 03 章（检索路径：研招网 → 招生政策 / 管理规定栏目（每年更新））</dd>
+      <dt>备注</dt><dd class="note">报名条件不卡人，但录取率卡人。具体专业的报录比、复试线，查目标院校研究生院官网的近三年数据，比看任何经验贴都准。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>灵活就业与个体户：没有门槛，但社保要自己交</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">社保全额自付（单位那部分也要自己出），按当地缴费基数计算，通常每月数百至数千元。</dd>
+      <dt>说人话</dt><dd class="plain">不想进单位、或者一时没找到工作，"灵活就业"是一条合法的路——你可以以个人身份参加职工社保。个体户更进一步，可以注册登记、正经营业。这两条都没有学历和年龄门槛。</dd>
+      <dt>收益</dt><dd class="gain">《促进个体工商户发展条例》第二条规定「有经营能力的公民……依法登记为个体工商户的，适用本条例」。灵活就业人员参加职工基本养老保险、基本医疗保险，依据是社会保险法及各地实施细则。</dd>
+      <dt>为什么</dt><dd class="why">这两条的价值在于"兜底"——当你不想被某一条路卡住时，它们是合法的替代方案。但代价是保障成本全部自己承担，且没有单位帮你分担。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">国务院 (2022). 促进个体工商户发展条例（国务院令第 755 号，第二条）. <a href="https://www.gov.cn/zhengce/zhengceku/2022-10/25/content_5721592.htm">https://www.gov.cn/zhengce/zhengceku/2022-10/25/content_5721592.htm</a>；社会保险参保办法见各地人社部门实施细则，入口：<a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">各地社保缴费基数与比例差异很大，且每年调整。具体金额查你所在地社保局官网或拨打 12333。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>应届生身份值多少：它是一张会过期的票</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一条不花钱。丢掉它的代价可能是错过整个校招季。</dd>
+      <dt>说人话</dt><dd class="plain">"应届毕业生"不是一个法律定义，而是招聘和招考实践里的一个身份。它决定你能不能走校招通道、能不能报"限应届"的公务员岗位、能不能享受部分落户优惠。这个身份有两种失效方式：一是过了择业期（通常毕业两年内），二是<strong>缴纳了职工社保</strong>（部分口径下会失去应届身份）。</dd>
+      <dt>收益</dt><dd class="gain">国家层面没有统一法规定义"应届毕业生"。可查的权威依据是：教育部与人社部关于做好高校毕业生就业创业工作的通知（年度发布），以及各地方人社部门的具体口径。</dd>
+      <dt>为什么</dt><dd class="why">这是本章最容易被忽略、代价最大的一条。很多人在大四"随便找个工作先干着"，签了劳动合同、交了社保，等到想考公时才发现自己已经不是应届生了——而这个身份，过期不补。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">应届生身份的界定见教育部、人力资源社会保障部年度就业创业工作通知，以及各地具体执行口径（逐年更新）。查询入口：国家大学生就业服务平台. <a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>"交社保会不会失去应届身份"各地口径不一</strong>，有的地方只看毕业年份，有的看社保记录。做决定前必须问清楚两个地方：目标单位的人力资源部门、你所在地的人社局。别人说的都不算。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch05">
+    <h2>05. 三方协议、档案、报到证：毕业后最容易出错的三件事</h2>
+    <div class="intro"><p>这一章讲的是手续，不是选择。手续的特点是可补救但很麻烦——而且很多人在出问题之前根本不知道有这些东西。</p><p>这三样东西的共同点是：<strong>只在关键节点用得上，用的时候没有就麻烦</strong>。档案找不到、三方协议违约、报到证丢了，处理的成本远高于提前十分钟了解。</p><p>本章条目：</p><p>- 第 1 条：三方协议不是劳动合同，但它有违约金</p><p>- 第 2 条：档案不能自己拿着，这是死规定</p><p>- 第 3 条：报到证已经取消，别再按老经验办事</p><p>- 第 4 条：户口迁移证有有效期，过期要重办</p><p>- 第 5 条：毕业时的材料清单，照着核对一遍</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>三方协议不是劳动合同，但违约金是真的</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">违约可能支付违约金，金额由协议约定，常见数千元。</dd>
+      <dt>说人话</dt><dd class="plain">「三方协议」是学生、学校、用人单位三方签的就业意向协议，作用是让学校统计就业率、让单位锁定你。它<strong>不是劳动合同</strong>——你的劳动关系从入职签劳动合同那天才开始。但协议里通常写了违约金条款，签了不去要赔。</dd>
+      <dt>收益</dt><dd class="gain">三方协议的法律性质属于民事协议，违约条款依《民法典》合同编处理。它不是《劳动合同法》意义上的劳动合同，因此不适用劳动合同关于试用期、经济补偿等规定。</dd>
+      <dt>为什么</dt><dd class="why">很多学生以为"三方随便签，反正不是劳动合同"，结果违约时被要求赔付。也有单位拿三方协议当"入职保证"来用。核心区别在于：三方协议约束的是"来不来"，劳动合同约束的是"干得怎么样"。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">三方协议为就业协议，法律性质依《中华人民共和国民法典》合同编一般规定；劳动合同依《中华人民共和国劳动合同法》。查询入口：国家法律法规数据库. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">签之前务必看清违约金条款和解除条件。部分单位会在协议里写"考公/考研成功可免责解除"，这条对你很关键——如果没有，签之前谈一谈。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>档案不能自己拿着，这是死规定</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">转递一般免费，但补办材料可能要跑多个部门，时间成本高。</dd>
+      <dt>说人话</dt><dd class="plain">人事档案是记录你学习工作经历的材料，必须由有档案管理权限的机构保管（学校、人才市场、国企事业单位、机关）。个人手里拿着档案，在很多场合是不被承认的——考公政审、职称评定、退休计算工龄都需要它，而"自带档案"会被认为不合规。</dd>
+      <dt>收益</dt><dd class="gain">档案管理依《流动人员人事档案管理服务规定》（人社部发〔2021〕37 号），明确档案应由公共就业和人才服务机构等具备资质的机构管理，个人不得自行保管。</dd>
+      <dt>为什么</dt><dd class="why">这条的坑在于"看起来没事"。档案在自己手里放几年，平时完全不影响生活，直到你要考公政审或者办退休，才发现需要补充材料、需要证明这段空白，那时处理成本极高。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">人力资源社会保障部等 (2021). 流动人员人事档案管理服务规定（人社部发〔2021〕37 号）. <a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">毕业后如果暂时没落实工作单位，档案通常有两种去向：转回生源地的人才服务机构，或暂存学校（有期限，一般两年）。<strong>务必在离校前确认档案去向并留下凭证</strong>，别等要用时才找。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>报到证已经取消，别再按老经验办事</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一条不花钱，但能避免白跑一趟。</dd>
+      <dt>说人话</dt><dd class="plain">如果你在网上看到"毕业要去办报到证""报到证丢了怎么办"这类内容，先确认它的年份。就业报到证制度已经调整，现在很多手续的办理方式与几年前不同。按旧流程办事，容易白跑。</dd>
+      <dt>收益</dt><dd class="gain">近年来高校毕业生就业手续持续简化，报到证相关制度已作调整。具体办理要求以你毕业当年学校就业指导中心和当地人社部门的通知为准。</dd>
+      <dt>为什么</dt><dd class="why">这类"政策变了但网上还是老攻略"的情况，是毕业生踩坑的高频来源。判断方法很简单：看攻略的发布时间，超过两年的直接跳过，去查官方最新通知。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">高校毕业生就业手续的调整见教育部、人力资源社会保障部历年通知（逐年更新）。查询入口：国家大学生就业服务平台. <a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这一条刻意不写具体年份和具体做法，因为各地执行进度不同。<strong>唯一可靠的做法是问你学校的就业指导中心</strong>——他们每年都在办这件事，比任何网上攻略都准。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>户口迁移证有有效期，过期要重办</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">重办需要回原籍派出所，可能涉及往返路费和时间。</dd>
+      <dt>说人话</dt><dd class="plain">入学时把户口迁到学校的，毕业时要迁出。迁出时会拿到户口迁移证，这张证有有效期（常见一个月，具体以证件标注为准）。过期没落户，就要回原籍重新办理，很折腾。</dd>
+      <dt>收益</dt><dd class="gain">户口迁移依《中华人民共和国户口登记条例》及各地公安机关实施细则办理。迁移证的有效期由签发机关在证件上标注。</dd>
+      <dt>为什么</dt><dd class="why">这是纯粹的流程性风险——不涉及判断，只需要按时办。但每年都有人因为"想着晚点再办"而重跑一趟。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">全国人大常委会 (1958). 中华人民共和国户口登记条例. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；具体有效期与办理流程见各地公安机关规定（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">拿到迁移证当天就在手机日历里设一个到期前一周的提醒。这是成本最低的防坑方式。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>毕业材料清单：照着核对一遍</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">十分钟。</dd>
+      <dt>说人话</dt><dd class="plain">毕业时要拿到和确认的东西，散落在不同部门，不核对就容易漏。下面这份清单按"必须拿到"和"必须确认"分两类：</dd>
+      <dt>收益</dt><dd class="gain"><strong>必须拿到</strong>：毕业证书、学位证书（本科及以上）、成绩单（多打几份，考研/出国/求职都可能要）、就业报到相关材料（按当年政策）、党团组织关系转接材料（党员/团员）。<strong>必须确认</strong>：学信网学籍/学历可查、档案去向已确认并有凭证、户口迁移已办理（如适用）、社保与公积金账户状态（如已就业）。</dd>
+      <dt>为什么</dt><dd class="why">这些东西的特点是"平时用不上，用时找不到"。而补办的成本远高于毕业时花十分钟核对。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">学历查询与认证：中国高等教育学生信息网（学信网）. <a href="https://www.chsi.com.cn/xlcx/index.jsp">https://www.chsi.com.cn/xlcx/index.jsp</a>；档案管理：人力资源社会保障部 (2021). 流动人员人事档案管理服务规定. <a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note"><strong>成绩单建议毕业时多打 5–10 份并加盖学校公章</strong>。毕业后回校补打，很多学校要收费且需要预约，出国申请时尤其麻烦。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch06">
+    <h2>06. 校园贷、兼职骗局与培训贷</h2>
+    <div class="intro"><p>这一章讲的是"你还没赚钱，先被赚走钱"的几种典型套路。</p><p>学生群体的特殊性在于：<strong>有身份（能背书）、有需求（缺钱）、有信用（还没被污染）</strong>。这三点恰好是骗局最看重的。所以这一章的每一条，都不是"不要贪心"这种空话，而是具体识别标志和处理路径。</p><p>本章条目：</p><p>- 第 1 条：正规贷款与非法放贷的分界线</p><p>- 第 2 条："培训贷"是校园里最常见的负债陷阱</p><p>- 第 3 条：刷单、助学金、兼职的四种典型骗局</p><p>- 第 4 条：出借身份证和银行卡的后果</p><p>- 第 5 条：已经被骗了，第一步做什么</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>正规与非法：利率红线在哪</h3>
+      <div class="tags"><span class="tag">钱 · 大</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">借错一次，可能背上数倍于本金的债务。</dd>
+      <dt>说人话</dt><dd class="plain">判断一笔借贷是否合法，看两件事：<strong>放贷方有没有资质</strong>，以及<strong>实际年化利率是否超过法定上限</strong>。没有放贷资质的机构（包括各种"XX 分期""XX 钱包"）本身就是非法放贷。另外，民间借贷利率有司法保护上限，超过部分不受法律保护。</dd>
+      <dt>收益</dt><dd class="gain">《最高人民法院关于审理民间借贷案件适用法律若干问题的规定》（2020 年修正）明确：出借人请求借款人按照合同约定利率支付利息的，人民法院应予支持，但是双方约定的利率超过合同成立时一年期贷款市场报价利率（LPR）四倍的除外。此外，未经批准从事放贷业务的，属于非法放贷。</dd>
+      <dt>为什么</dt><dd class="why">学生贷的坑往往不在利率，而在<strong>隐藏费用</strong>——手续费、服务费、逾期费叠加后，实际年化远高于名义利率。所以判断标准应当是"我一共要还多少钱"，而不是"月息几厘"。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">最高人民法院 (2020). 关于审理民间借贷案件适用法律若干问题的规定（第二十五条）. <a href="https://www.court.gov.cn/">https://www.court.gov.cn/</a>（检索路径：最高人民法院官网 → 司法解释与司法文件栏目）</dd>
+      <dt>备注</dt><dd class="note">2020 年修正后，利率上限从原来的"24%/36%"改为"一年期 LPR 的四倍"（LPR 每月更新，是浮动值）。<strong>据此计算，任何号称"日息万五"（年化约 18%）以上的产品，都要仔细核算总还款额。</strong></dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>"培训贷"：先让你签合同，再告诉你这是贷款</h3>
+      <div class="tags"><span class="tag">钱 · 大</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">背上数千到数万元贷款，且课程质量通常远低于承诺。</dd>
+      <dt>说人话</dt><dd class="plain">典型套路是"先培训、后付费""包就业、月薪过万"。你签的是培训合同，实际签的是贷款合同——机构把你的贷款一次性拿走，你每月还钱给金融机构。课程结束后就业承诺兑现不了，但贷款还得还。</dd>
+      <dt>收益</dt><dd class="gain">这类行为的核心问题是<strong>虚假宣传与格式条款</strong>。《中华人民共和国消费者权益保护法》规定经营者不得作虚假或者引人误解的宣传；《民法典》规定提供格式条款一方不合理地免除或减轻其责任、加重对方责任、限制对方主要权利的，该条款无效。</dd>
+      <dt>为什么</dt><dd class="why">为什么难脱身？因为法律关系是两层的：你和培训机构是服务合同，你和金融机构是借贷合同。机构跑路，借贷合同仍然有效——这就是"退课容易退贷难"的根源。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人大常委会 (2013). 中华人民共和国消费者权益保护法（第二十条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；全国人民代表大会 (2020). 中华人民共和国民法典（第四百九十七条 格式条款无效情形）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>识别标志</strong>：① 要求你下载某个借贷 App 或在小程序上"验证额度"；② 合同里出现"分期""服务方""资金方"等字样；③ 承诺"包就业""保底薪资"。见到任意一条，先停下来查这家机构有没有办学许可。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>刷单、助学金、兼职：四种高频骗局</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">多数人损失几百到几千元；部分案例涉及帮信罪（见下条）。</dd>
+      <dt>说人话</dt><dd class="plain">学生群体最高频的四类骗局：① <strong>刷单返利</strong>——先给你小额返利建立信任，再让你垫付大额；② <strong>假冒助学金/奖学金发放</strong>——要求你提供银行卡信息或先交"手续费"；③ <strong>兼职押金</strong>——入职先交服装费、培训费、保证金；④ <strong>游戏账号/装备交易</strong>——引导到站外交易，收钱不发货。</dd>
+      <dt>收益</dt><dd class="gain">这几类行为都构成诈骗。《中华人民共和国刑法》第二百六十六条规定了诈骗罪的构成与量刑；《反电信网络诈骗法》对电信网络诈骗的防范、惩治作了专门规定。</dd>
+      <dt>为什么</dt><dd class="why">这些骗局的共同点是"用小额真实收益建立信任"。刷单第一次真的返你 20 元，第二次返 50 元，第三次让你垫 2000 元就消失了。<strong>判断标准不是"前面有没有兑现"，而是"什么时候开始要你先出钱"</strong>。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2022). 中华人民共和国反电信网络诈骗法. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；全国人民代表大会 (2020). 中华人民共和国刑法（第二百六十六条 诈骗罪）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">国家反诈中心 App 可以举报和预警，但更有效的做法是不进入这个流程：<strong>任何要求你先付钱的"工作"，都不是工作。</strong></dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>出借身份证、银行卡、手机卡：可能构成犯罪</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">可能面临刑事责任，且留下犯罪记录，影响考公、就业、征信。</dd>
+      <dt>说人话</dt><dd class="plain">"借你的卡走个账，给你几百块"——这是最危险的一种"兼职"。你的银行卡、手机卡一旦被用于电信诈骗或洗钱，你可能构成"帮助信息网络犯罪活动罪"（俗称"帮信罪"），哪怕你不知情也难以自证。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国刑法》第二百八十七条之二规定：明知他人利用信息网络实施犯罪，为其犯罪提供互联网接入、服务器托管、网络存储、通讯传输等技术支持，或者提供广告推广、支付结算等帮助，情节严重的，处三年以下有期徒刑或者拘役，并处或者单处罚金。《反电信网络诈骗法》第三十一条明确，任何单位和个人不得非法买卖、出租、出借电话卡、银行账户、支付账户等。</dd>
+      <dt>为什么</dt><dd class="why">这是本章里"代价最大、最容易被低估"的一条。几百块的报酬，换来的是刑事风险和终身记录。而且司法实践中，"不知情"的辩解往往不被采纳——出借行为本身就会被推定为"应当知道"。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2020). 中华人民共和国刑法（第二百八十七条之二 帮助信息网络犯罪活动罪）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；全国人民代表大会 (2022). 中华人民共和国反电信网络诈骗法（第三十一条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>不只是银行卡，微信/支付宝收款码、电话卡、甚至帮忙"取现"都算。</strong> 已经出借的，立即挂失并报警备案，保留自己是受害方的证据。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>已经被骗了：第一步不是自责，是固定证据</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">花一两个小时，但能显著提高追回概率。</dd>
+      <dt>说人话</dt><dd class="plain">被骗之后的黄金时间是前几小时。要做的不是删聊天记录或不好意思说，而是立刻固定证据并报警。顺序是：① 截图保存全部聊天记录、转账记录、对方账号信息；② 立即拨打 110 或到就近派出所报案，说明是电信网络诈骗；③ 联系银行/支付平台申请止付；④ 通过国家反诈中心 App 举报。</dd>
+      <dt>收益</dt><dd class="gain">及时报案是启动资金止付和账户冻结的前提。《反电信网络诈骗法》规定了金融、电信、互联网等部门的协同处置机制，越早报案，止付成功率越高。</dd>
+      <dt>为什么</dt><dd class="why">心理学上有个现象——受害者常因为羞耻感而延迟报案，结果错过止付窗口。实际上越早报案，追回可能性越大，而且报案记录本身也是你后续维权的依据。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2022). 中华人民共和国反电信网络诈骗法（第四章 综合措施）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；报案渠道：拨打 110 或到就近派出所（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>不要相信"网上追款""黑客帮你找回"的服务——这是二次诈骗，专门针对已经被骗的人。</strong> 正规追款只有公安机关一条路，且不收取任何费用。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch07">
+    <h2>07. 实习、竞赛、项目：哪个更值钱</h2>
+    <div class="intro"><p>这一章回答一个具体问题：<strong>在有限的时间里，三件事只能选一件，选哪个。</strong></p><p>大多数人的困境不是"不想努力"，而是"努力的方向太多，每个都浅尝辄止"。这一章按"能不能被验证"排序——能被陌生人验证的，比只能自己说的值钱。</p><p>本章条目：</p><p>- 第 1 条：三件事的回报结构完全不同</p><p>- 第 2 条：实习的价值在"真实工作过"，不在公司名气</p><p>- 第 3 条：竞赛要看是否在"白名单"里</p><p>- 第 4 条：项目作品的关键是可访问、可复现</p><p>- 第 5 条：时间怎么分配：一个能过筛子的组合</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>三件事的回报结构完全不同</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">三者都要投入 3–12 个月，且高度挤占彼此的时间。</dd>
+      <dt>说人话</dt><dd class="plain">实习给你的是"职场经历"（证明你能在真实环境里交付）；竞赛给你的是"可比较的名次"（有官方榜单，第三方能验证）；项目给你的是"可查看的作品"（对方能点开看）。三者的共同点都是"提供第三方可验证的证据"，区别在于验证的难度。</dd>
+      <dt>收益</dt><dd class="gain">判断标准可以统一成一个问题——<strong>一个陌生 HR 花 30 秒，能不能验证你说的这件事是真的？</strong> 竞赛有获奖名单可查，最快；开源项目有链接可点，次之；实习经历需要背调，最慢。</dd>
+      <dt>为什么</dt><dd class="why">招聘的本质是降低误判风险。所有能被快速验证的证据，都比"我自己说我很努力"有用。这就是为什么同样是三个月，做一个有 GitHub 链接的项目，往往比在一家不知名公司实习更有效。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据能证明三者的相对回报。本条为经验归纳，判断依据是招聘实践，例：<a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。不同行业差异极大——金融、国企更看重实习（有留用机制），互联网技术岗更看重项目与竞赛。必须按目标行业调整。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>实习：价值在"真实工作过"，不在公司名气</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">多数实习补贴较低（部分无薪），且要占用一个学期或整个暑假。</dd>
+      <dt>说人话</dt><dd class="plain">实习的核心价值不是"我在这家公司待过"，而是"我在真实的生产环境里交付过东西"。大厂实习的价值在于流程规范、有导师带；小公司实习的价值在于能碰核心业务、独当一面。两者都能写成简历，但要说清楚你具体做了什么。</dd>
+      <dt>收益</dt><dd class="gain">判断一段实习是否值得，看三个问题：① 有没有明确的产出物（代码、文档、方案）；② 有没有人能给你写推荐；③ 有没有机会接触到这个行业的真实工作方式。三个都"没有"的实习，价值接近零。</dd>
+      <dt>为什么</dt><dd class="why">企业招应届生时的核心担忧是"能不能干活"。实习是唯一能直接证明这一点的经历——因为它发生在真实的工作环境里，有 deadline、有协作、有交付标准。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可用于跨行业比较实习价值。本条为招聘实践经验归纳，例：<a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断。<strong>注意区分"实习"与"打杂"</strong>：如果三个月里你的工作是复印、订餐、整理表格，那这段经历在简历上几乎无法展开写。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>竞赛：先看是否在"白名单"里</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">报名费、差旅费（部分赛事），以及 1–6 个月的备赛时间。</dd>
+      <dt>说人话</dt><dd class="plain">竞赛的含金量差别极大。判断标准是：这个赛事是否被官方认可（是否在教育部或行业协会公布的赛事名单里）。在白名单里的赛事，获奖可以写进简历、部分学校还能折算学分或加综测；不在名单里的"国际大赛"，可能只是商业机构办的。</dd>
+      <dt>收益</dt><dd class="gain">教育部每年公布全国普通高校大学生竞赛名单（俗称"白名单"），列入的赛事具有官方认可度。部分赛事获奖在保研、评奖中有明确加分，具体规则由各校规定。</dd>
+      <dt>为什么</dt><dd class="why">竞赛的价值来自"可比较"——有官方榜单，第三方能查证。一旦赛事不在名单里，这个"可比较性"就消失了，获奖也就变成了自说自话。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">教育部年度公布的全国普通高校大学生竞赛名单（逐年更新，名单会调整）。查询入口：中国高等教育学会（高校竞赛评估与管理体系研究工作组）. <a href="https://www.cahe.edu.cn/">https://www.cahe.edu.cn/</a>（检索路径：中国高等教育学会 → 高校竞赛评估与管理体系研究工作组）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——名单每年调整，<strong>今年在名单里不代表明年还在</strong>，报名前查当年名单。另外，同一个赛事的不同赛道含金量也不同，省赛和国赛差别很大。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>项目作品：关键是可访问、可复现</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">几乎零成本（GitHub 免费、域名可选），主要投入是时间。</dd>
+      <dt>说人话</dt><dd class="plain">一个项目要能当证据用，必须满足两条：<strong>对方能点开看</strong>（有链接，不是压缩包），<strong>对方能跑起来</strong>（有 README、有安装步骤、有截图）。很多人做了一堆项目却没法展示，就是因为缺这两条。</dd>
+      <dt>收益</dt><dd class="gain">判断一个项目作品是否合格，用一个陌生人的视角测一遍：给他链接，他能不能在 5 分钟内明白这是什么、怎么用、做了什么。做不到就是没做完。</dd>
+      <dt>为什么</dt><dd class="why">项目是三者里<strong>唯一完全由你控制</strong>的证据。实习要看公司给不给机会，竞赛要看你能不能获奖，只有项目，你可以随时开始、随时改进、随时展示。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可量化项目作品的回报。本条基于开源社区通行实践（README 规范、可复现性），例：<a href="https://docs.github.com/zh/repositories">https://docs.github.com/zh/repositories</a></dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断。<strong>最常见的错误是"项目做了但没写 README"</strong>——在招聘方眼里，没有 README 的项目等于不存在。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>时间怎么分配：一个能过筛子的组合</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">按这个组合走，意味着放弃一部分"什么都参加"的选项。</dd>
+      <dt>说人话</dt><dd class="plain">如果目标是求职，一个可行的组合是：<strong>一段真实实习 + 一个可访问的项目 + 一次白名单赛事参与</strong>。三者的作用不同，互相不可替代：实习证明你能在团队里干活，项目证明你有独立交付能力，竞赛证明你在同类人里的相对位置。</dd>
+      <dt>收益</dt><dd class="gain">这个组合的检验方式是——把这三样放进一份一页纸的简历，能不能填满且不重复。填不满说明还缺东西，重复说明有一样是多余的。</dd>
+      <dt>为什么</dt><dd class="why">招聘筛选通常是分层的：先看有没有硬性资格（学历、专业），再看有没有证据（项目、实习），最后看证据的质量。三者覆盖了不同层，所以组合比单点突破更稳。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据支撑这一具体组合。本条为策略性归纳</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>不是普适公式</strong>。考研、考公、出国三条路对这三样的权重完全不同——考研几乎不看实习，出国更看重科研与 GPA。必须先确定去向，再决定投什么。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch08">
+    <h2>08. 考证：哪些真有用，哪些只是花钱</h2>
+    <div class="intro"><p>这一章只解决一件事：<strong>怎么判断一个证值不值得考。</strong></p><p>"考证热"的本质是信息不对称——培训机构掌握信息，学生不掌握。破解方法不是"别考证"，而是知道去哪查一件事：这个证有没有法定效力。</p><p>本章条目：</p><p>- 第 1 条：先查《国家职业资格目录》，一分钟筛掉大部分</p><p>- 第 2 条：准入类和水平评价类，待遇完全不同</p><p>- 第 3 条：四种常见的"没用的证"</p><p>- 第 4 条：考证的时间成本怎么算</p><p>- 第 5 条：这些证对学生有明确好处</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>先查目录：一分钟筛掉大部分证</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">免费，十分钟。</dd>
+      <dt>说人话</dt><dd class="plain">国家有一份《国家职业资格目录》，列在里面的职业资格才具有法定效力。不在目录里的"证"，无论是哪家机构发的，都不构成执业资格。所以你看到任何一个证的宣传，第一步就是去查它在不在目录里。</dd>
+      <dt>收益</dt><dd class="gain">人力资源社会保障部负责公布并动态调整《国家职业资格目录》。目录内的职业资格分为"准入类"和"水平评价类"两种。目录之外的，一律不得与就业创业挂钩。</dd>
+      <dt>为什么</dt><dd class="why">这条的价值在于它是<strong>唯一的一票否决标准</strong>。培训机构可以包装任何课程，但改不了目录——目录是公开的，查一次就知道真假。这一条能筛掉市面上大部分"高薪证书"。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">人力资源社会保障部. 国家职业资格目录（动态调整，以最新版为准）. <a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">目录会调整——有些职业已退出目录（意味着不再需要持证上岗）。<strong>必须查最新版</strong>，用三年前的目录做判断会出错。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>准入类与水平评价类：待遇差一个量级</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">准入类通常需要较长备考（数月至一年），费用数百至数千元。</dd>
+      <dt>说人话</dt><dd class="plain">目录内的证分两种。<strong>准入类</strong>是"没有这个证就不能干这行"，比如医师资格、教师资格、注册消防工程师——这类证直接对应岗位，含金量最高。<strong>水平评价类</strong>是"有这个证证明你水平高"，但不持证也能干，比如企业人力资源管理师。</dd>
+      <dt>收益</dt><dd class="gain">准入类职业资格具有强制性，用人单位不得招用未取得相应职业资格的人员从事该职业。水平评价类职业资格则由用人单位自主评价使用。</dd>
+      <dt>为什么</dt><dd class="why">这个区别决定了证的"必需性"。准入类证是门槛，考到就能进入某个行业；水平评价类证是加分项，考到只是"更好"，不是"才能"。同样花三个月，回报完全不同。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">人力资源社会保障部. 国家职业资格目录（分类说明）. <a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索）</dd>
+      <dt>备注</dt><dd class="note">判断方法很简单——去招聘网站搜这个岗位，看招聘要求里有没有"必须持 XX 证"。写了就是准入类性质的要求，没写就是加分项。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>四种常见的"没用的证"</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 小</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">几百到几千元报名费 + 培训费，以及数月时间。</dd>
+      <dt>说人话</dt><dd class="plain">以下四类证，多数情况下不值得考：① <strong>不在目录里的"职业资格证书"</strong>——没有法定效力；② <strong>各类"人才库""协会认证"</strong>——发证机构是商业公司或行业协会，招聘方不认；③ <strong>"国际认证"但没有对应岗位</strong>——名字唬人，实际无人问；④ <strong>与专业完全无关的证</strong>——除非你明确要转行。</dd>
+      <dt>收益</dt><dd class="gain">这四类的共同特征是：宣传重点在"包过""高薪""人才缺口百万"，而不是"哪个岗位要求这个证"。<strong>凡是不指向具体岗位的证，基本都不用考。</strong></dd>
+      <dt>为什么</dt><dd class="why">考证市场的商业模式是"卖课程"，不是"卖资格"。所以它的营销重点必然是制造焦虑（"人才缺口百万""不考就落后"），而不是告诉你真相（"这个岗位其实不要求"）。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可统计"无用证书"的市场规模。本条为经验判断，判断依据是《国家职业资格目录》之外的资格均无法定效力</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。判断一个证有没有用，最可靠的方法是去招聘网站搜岗位要求，而不是看培训机构的宣传页。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>时间成本怎么算：把"机会成本"算进去</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">备考三个月的真实成本，不只是报名费，还有这三个月你本可以做别的事。</dd>
+      <dt>说人话</dt><dd class="plain">算一个证值不值，要用这个公式：<strong>（考证后的收益 - 考证成本）对比（同样时间做别的事的收益）</strong>。如果这三个月你本可以用来做一段实习或一个项目，那考证的机会成本就是那段实习或项目的价值。</dd>
+      <dt>收益</dt><dd class="gain">没有一个通用公式能算出这个账，因为"别的事"的价值因人而异。但可以确定的是：<strong>时间是不可再生的</strong>，任何"三个月"的投入都在和另外的选项竞争。</dd>
+      <dt>为什么</dt><dd class="why">这是本章最容易被忽略的一点。很多人考证是因为"不知道干什么，先考个证"，而不是因为"这个证对我的目标有明确帮助"。前者是逃避，后者是投资。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据。本条为决策方法说明</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>支撑，是方法说明不是结论。具体到你自己，先回答一个问题：<strong>考完这个证，我下一步做什么？</strong> 答不上来就先别考。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>这些证对学生有明确好处</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">报名费数百元，备考 1–3 个月。</dd>
+      <dt>说人话</dt><dd class="plain">以下几类对学生有比较明确的价值：① <strong>教师资格证</strong>（准入类，想当老师必须有）；② <strong>法律职业资格</strong>（准入类，想进法律行业必须有）；③ <strong>注册会计师</strong>（准入类，财会方向硬通货）；④ <strong>计算机技术与软件专业技术资格（软考）</strong>（水平评价类，部分城市可对应职称）；⑤ <strong>英语四六级</strong>（多数企业校招的隐性门槛）。</dd>
+      <dt>收益</dt><dd class="gain">前三个属于准入类，是国家职业资格目录内的职业资格，具有法定效力。软考属于水平评价类，部分城市将其与职称评定挂钩。四六级不是职业资格，但它是多数企业校招简历筛选的常见条件。</dd>
+      <dt>为什么</dt><dd class="why">这些证的共同点是"指向明确的下一步"——教师资格证指向教师岗，法考指向法律岗，注会指向财会岗。它们不是"提升了我的综合素质"，而是"打开了一扇具体的门"。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">职业资格性质见《国家职业资格目录》<a href="https://www.mohrss.gov.cn/">https://www.mohrss.gov.cn/</a>；软考由工业和信息化部教育与考试中心组织 <a href="https://www.ruankao.org.cn/">https://www.ruankao.org.cn/</a>；四六级由全国大学英语四、六级考试委员会组织（检索路径：人社部官网 → 政策法规 / 国家职业资格目录 → 按标题检索；软考官网 → 考试安排 / 政策文件栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——"有明确好处"是就准入类而言；具体到个人是否值得考，仍要看你是否要走那条路。另外，四六级的分数要求在各单位不同，有的企业只看"通过"，有的看具体分数。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch09">
+    <h2>09. 撑不住的时候：求助是技术问题</h2>
+    <div class="intro"><p>这一章不是安慰，是把"求助"这件事拆成可执行的步骤。</p><p>很多人不去求助，不是因为不知道严重，而是不知道<strong>具体该打哪个电话、说什么、会不会被记录</strong>。这一章把这些模糊的部分讲清楚。</p><p>&gt; ⚠️ <strong>这一章涉及心理健康与就医，请把它当"发现问题"的清单，不要当诊断或法律意见</strong></p><p>&gt; 内容最后核对：2026-10-29。政策与指南会更新，动手前请以官方原文为准。</p><p>&gt; <strong>出现下列情况，先找专业人士，不要照着本书操作</strong>：有自伤或伤人的念头、已经出现幻觉或长期失眠、正在服药需要调量——直接拨 120 / 110，或去精神科急诊。</p><p>本章条目：</p><p>- 第 1 条：先分清"状态不好"和"需要就医"</p><p>- 第 2 条：学校心理咨询的真实边界（会保密到什么程度）</p><p>- 第 3 条：24 小时热线有哪些，怎么用</p><p>- 第 4 条：去医院挂什么科，要不要花钱</p><p>- 第 5 条：如果身边有人需要帮助</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>先分清"状态不好"和"需要就医"</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">零成本。花五分钟对照。</dd>
+      <dt>说人话</dt><dd class="plain">情绪低落、睡不着、不想上课，这些是状态不好，多数会自己缓解。但如果出现以下情况之一，就该去求助：<strong>持续两周以上</strong>、<strong>影响到吃饭睡觉上课</strong>、<strong>出现自伤想法</strong>。这三条不是诊断标准，是"该去看人"的信号。</dd>
+      <dt>收益</dt><dd class="gain">精神障碍的诊断有明确的临床标准，由专业医师依据《国际疾病分类》或诊断标准作出。学生本人不需要自我诊断，只需要判断"要不要去找人"。</dd>
+      <dt>为什么</dt><dd class="why">大多数人拖延求助的原因是"还没严重到那个程度"。但心理问题的特点是——越早介入，恢复越快、代价越小。等到"严重到那个程度"时，往往已经影响到学业了。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可界定「什么程度该就医」这一具体阈值。判断依据为临床通用标准，具体诊断须由专业医师作出，例：<a href="http://www.nhc.gov.cn/">http://www.nhc.gov.cn/</a></dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>不是诊断标准</strong>。任何自我判断都不能替代专业评估。觉得不对劲就去问，问了没事是最好的结果。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>学校心理咨询：会保密到什么程度</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">免费，通常需要预约。</dd>
+      <dt>说人话</dt><dd class="plain">学校心理咨询中心的保密是有边界的。一般情况：谈话内容保密，不记入档案，不通知家长和辅导员。例外情况：<strong>有自伤或伤人的风险</strong>时，咨询师有责任采取必要措施（可能联系辅导员或家长）。这个边界是行业规范，不是学校自己定的。</dd>
+      <dt>收益</dt><dd class="gain">高校心理健康教育工作依《高等学校学生心理健康教育指导纲要》（教党〔2018〕41 号）等文件开展，要求高校设立心理健康教育与咨询机构。心理咨询师遵循保密原则及其例外（涉及生命安全时突破保密）。</dd>
+      <dt>为什么</dt><dd class="why">很多人不敢去，是怕"被记档案""被通知家长"。了解真实边界后，你会发现：绝大多数情况是保密的，只有涉及生命安全时才会突破——而那种情况下，突破保密恰恰是为了保护你。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">中共教育部党组 (2018). 高等学校学生心理健康教育指导纲要（教党〔2018〕41 号）. <a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">各校咨询中心的预约方式、等待时间、咨询师资质差异很大。第一次去可以先问清楚："什么情况下会通知辅导员？"——这是你的权利，问了不代表你有问题。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>24 小时热线：不知道打哪个就打这个</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">免费，随时可打。</dd>
+      <dt>说人话</dt><dd class="plain">如果不想通过学校、也不想去医院，可以先打热线。全国统一的心理援助热线是 <strong>12356</strong>（各地已陆续开通），此外各省市也有本地的心理援助热线。热线的特点是不需要预约、不记名、可以只说"我现在很难受"。</dd>
+      <dt>收益</dt><dd class="gain">国家卫生健康委员会推动设立 12356 全国统一心理援助热线，各地精神卫生中心、疾控中心也设有心理援助热线（号码各地不同）。</dd>
+      <dt>为什么</dt><dd class="why">热线的作用不是"解决问题"，是"先让你撑过今晚"。它的价值在于即时性——不需要预约、不需要挂号、不需要说明身份。在最难受的那一刻，有一个能立刻拨通的号码，比任何建议都实际。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">国家卫生健康委员会. 全国统一心理援助热线 12356（各地陆续开通，具体服务时间以当地为准）. <a href="http://www.nhc.gov.cn/">http://www.nhc.gov.cn/</a></dd>
+      <dt>备注</dt><dd class="note">12356 在部分地区尚在开通中，若无法接通，可拨打当地精神卫生中心热线或 12345 转心理援助。紧急情况（有立即的生命危险）请直接拨 120 或 110。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>去医院：挂什么科，要不要花钱</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">挂号费与诊疗费，学生医保可报销一部分；药物另计。</dd>
+      <dt>说人话</dt><dd class="plain">看心理问题去医院，挂<strong>精神科</strong>或<strong>心理科</strong>（部分医院叫"临床心理科""心身医学科"）。不是"神经内科"——那是看脑血管、癫痫的。第一次就诊通常包括问诊和量表评估，医生会判断是否需要用药。</dd>
+      <dt>收益</dt><dd class="gain">精神卫生服务依《中华人民共和国精神卫生法》开展。该法规定，精神障碍的诊断应当由精神科执业医师作出；医疗机构不得因就诊者的精神障碍而歧视其就学、就业等权利。</dd>
+      <dt>为什么</dt><dd class="why">很多人对"去精神科"有羞耻感，其实它和看感冒没有本质区别——都是身体的某个系统出了问题。而且越早规范治疗，用药周期越短。硬扛的代价往往是用药时间更长。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2012, 2018 修正). 中华人民共和国精神卫生法（第二十九条 诊断主体、第四条 权益保护）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>就诊记录属于个人隐私</strong>，医疗机构有保密义务。学生医保通常可报销部分门诊费用，具体比例查学校医保办。不要让"怕留下记录"阻止你就医——法律明确禁止因精神障碍歧视就学就业。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>如果身边有人需要帮助</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">花时间陪伴，可能影响自己的状态。</dd>
+      <dt>说人话</dt><dd class="plain">如果你发现同学状态不对，能做的最有效的三件事是：<strong>直接问</strong>（"你最近是不是不太好"）、<strong>认真听</strong>（不急着给建议）、<strong>陪着去找人</strong>（陪他去咨询中心或医院）。最没用的三件事是：讲道理、比惨（"我比你更惨"）、保证保密却做不到。</dd>
+      <dt>收益</dt><dd class="gain">世界卫生组织等机构推荐的自杀预防策略中，"gatekeeper 培训"（识别风险并转介）是有效手段之一。核心做法是：识别信号、直接询问、转介专业资源、陪伴。</dd>
+      <dt>为什么</dt><dd class="why">很多人不敢问"你是不是想不开"，怕"问了反而提醒他"。研究结论恰恰相反——直接询问不会增加风险，反而会让对方感到被看见。真正危险的是假装没看见。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">世界卫生组织. 预防自杀：一项全球要务 / mhGAP 相关指南. <a href="https://www.who.int/zh/health-topics/suicide">https://www.who.int/zh/health-topics/suicide</a></dd>
+      <dt>备注</dt><dd class="note">陪伴者的自我保护同样重要。如果你自己也快撑不住，先把人交给专业机构（辅导员、咨询中心、医院），这不是推卸责任，是正确做法。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch10">
+    <h2>10. 和家里相处：钱、边界、以及说不清的那些事</h2>
+    <div class="intro"><p>这一章写的是大多数"成长指南"回避的部分：<strong>家庭</strong>。</p><p>学生的经济来源、专业选择、就业去向，很多不完全由自己决定。这一章不评价任何家庭，只把几件事讲清楚：法律给了你什么权利、拒绝的时候怎么拒绝、以及什么时候这件事已经超出"沟通"能解决的范围。</p><p>本章条目：</p><p>- 第 1 条：18 岁之后，法律上你不是"被监护人"了</p><p>- 第 2 条：学费和生活费，父母的义务到什么程度</p><p>- 第 3 条：选专业、选工作，谁说了算</p><p>- 第 4 条：家庭暴力没有"程度不够"这一说</p><p>- 第 5 条：不想回家的时候，有哪些正当选项</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>18 岁之后，法律上你已经不是"被监护人"</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一条不花钱。</dd>
+      <dt>说人话</dt><dd class="plain">成年这个分界线是硬的——《民法典》规定十八周岁以上的自然人为成年人，具有完全民事行为能力。这意味着：签合同、办银行卡、决定自己的专业和职业，法律上都是你自己说了算，不需要监护人同意。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国民法典》第十七条：「十八周岁以上的自然人为成年人。不满十八周岁的自然人为未成年人。」第十八条：「成年人为完全民事行为能力人，可以独立实施民事法律行为。」</dd>
+      <dt>为什么</dt><dd class="why">这条的实际意义在于"权利边界"。父母仍然可以给建议、可以出钱，但"决定权"在你——这不是态度问题，是法律问题。理解这一点，能让很多对话从"我必须听你的"变成"我需要你支持"。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2020). 中华人民共和国民法典（第十七、十八条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">成年不等于经济独立。权利独立和经济依赖可以同时存在，这两件事不矛盾——本章后面几条讲的就是怎么处理这种并存。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>学费和生活费：父母的义务到哪为止</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一条不花钱，但可能改变你对"该不该开口"的判断。</dd>
+      <dt>说人话</dt><dd class="plain">父母对子女的抚养义务，原则上到子女成年为止。但有一个常见例外：<strong>不能独立生活的成年子女</strong>，父母仍有抚养义务。在校就读的学生，在司法实践中常被认定为"不能独立生活"，因此父母仍需承担必要的教育费用。不过这个认定并非绝对，法院会结合具体情况判断。</dd>
+      <dt>收益</dt><dd class="gain">《民法典》第二十六条规定父母对未成年子女负有抚养、教育和保护的义务；第一千零六十七条规定：「父母不履行抚养义务的，未成年子女或者不能独立生活的成年子女，有要求父母给付抚养费的权利。」</dd>
+      <dt>为什么</dt><dd class="why">这条的现实意义是"约定俗成之外还有法律"。很多家庭把"供你读书"当成恩情，法律上它有义务基础；但反过来，法律支持的是"必要费用"，不是"你想要的一切"。理解这两边，谈判才有依据。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2020). 中华人民共和国民法典（第二十六、一千零六十七条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>"不能独立生活"的认定要靠具体案情</strong>，各地判决不一，本条不构成法律意见。真要走法律途径，先咨询法律援助（12348）。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>选专业、选工作：决定权在你，代价也在你</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">坚持自己的选择，可能失去家庭的经济支持或情感支持。</dd>
+      <dt>说人话</dt><dd class="plain">法律上你已经成年，专业和职业的决定权在你。但现实里，很多家庭的"建议"带着条件——"你要读这个专业我才给你出学费"。这不是法律问题，是谈判问题。</dd>
+      <dt>收益</dt><dd class="gain">法律给了你决定权（见第 1 条），但没有给你"既自己决定、又要对方出钱"的权利。这两件事需要分开谈：决定权归你，资助是另一件事，可以谈条件。</dd>
+      <dt>为什么</dt><dd class="why">把这两件事混在一起，就会陷入"要么全听、要么全不听"的死局。拆开之后，选项变多了：比如自己申请助学贷款、自己打工、或者接受部分资助但保留决定权。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">《民法典》成年与民事行为能力规定 <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；助学贷款政策见全国学生资助管理中心 <a href="https://www.xszz.edu.cn/">https://www.xszz.edu.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款；全国学生资助管理中心 → 资助政策栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——法律边界清楚，但"怎么谈"没有标准答案。真要独立承担，先算清楚钱：学费、住宿、生活费一年多少，自己能不能覆盖。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>家庭暴力：没有"程度不够"这一说</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">求助可能带来家庭关系的变化，但这是保护自己的必要代价。</dd>
+      <dt>说人话</dt><dd class="plain">家庭暴力不是"家务事"。《反家庭暴力法》明确禁止任何形式的家庭暴力，包括身体和精神侵害。很多人以为"没打出伤就不算"，但法律上的家庭暴力包括经常性谩骂、恐吓等精神侵害。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国反家庭暴力法》第二条：「本法所称家庭暴力，是指家庭成员之间以殴打、捆绑、残害、限制人身自由以及经常性谩骂、恐吓等方式实施的身体、精神等侵害行为。」第十三条规定，家庭暴力受害人及其法定代理人、近亲属可以向加害人或者受害人所在单位、居民委员会、村民委员会、妇女联合会等单位投诉、反映或者求助。第二十三条规定，当事人因遭受家庭暴力或者面临家庭暴力现实危险，向人民法院申请人身安全保护令的，人民法院应当受理。</dd>
+      <dt>为什么</dt><dd class="why">这条的重点是"人身安全保护令"——它不需要先离婚、不需要先报警立案，可以单独申请。这是很多人不知道的救济途径。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2015). 中华人民共和国反家庭暴力法（第二、十三、二十三条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">紧急情况先打 110。需要法律帮助拨 12348（公共法律服务热线）。学校层面可以联系辅导员、心理咨询中心，他们有转介渠道。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>不想回家的时候：几个正当选项</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">寒暑假留校可能产生住宿费；独自生活需要覆盖房租和伙食。</dd>
+      <dt>说人话</dt><dd class="plain">如果你不想在假期回家，现实中有几条路：① 申请留校住宿（多数学校允许，需提前申请并可能收费）；② 找实习，边工作边住；③ 参加学校组织的暑期项目、社会实践；④ 短期租房。这些都不是"不孝"，是成年人的正常选择。</dd>
+      <dt>收益</dt><dd class="gain">留校住宿与假期管理由各校学生管理规定确定，需查本校具体办法。实习与租房涉及《民法典》租赁合同相关规定。</dd>
+      <dt>为什么</dt><dd class="why">这条的价值在于给出"体面的理由"。很多时候问题不是"能不能不回"，而是"回去怎么解释"。有一个正当的、可核实的理由（实习、项目、留校申请），能让对话从对抗变成陈述。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可覆盖各校留校政策。具体规定需查本校学生工作部门通知，例：<a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。如果家庭关系已经严重影响到你的状态，第 09 章（求助）比这一条更有用——先照顾自己，再处理关系。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch11">
+    <h2>11. 社团、宿舍、同学关系：不想处也得处的那些年</h2>
+    <div class="intro"><p>这一章讲的是"没有选择权的关系"——室友是系统分配的，同学是随机排班的。</p><p>这类关系和职场关系不同：职场可以离职，宿舍换不了。所以处理方式也不一样：目标是"降低摩擦成本"，不是"成为朋友"。</p><p>本章条目：</p><p>- 第 1 条：宿舍矛盾的三种类型，解法完全不同</p><p>- 第 2 条：换宿舍是权利，但要按程序走</p><p>- 第 3 条：社团值不值得进，看它给你什么</p><p>- 第 4 条：遇到校园欺凌，先做的不是"忍"也不是"打回去"</p><p>- 第 5 条：同学关系的真实价值</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>宿舍矛盾：先分清是哪一类，再决定要不要谈</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">沟通成本，可能尴尬一段时间。</dd>
+      <dt>说人话</dt><dd class="plain">宿舍矛盾分三类，解法完全不同。<strong>作息型</strong>（睡觉时间、灯光、声音）——这类最好解决，谈一次规则就行；<strong>习惯型</strong>（卫生、物品、气味）——要明确标准，不能只说"注意一下"；<strong>人格型</strong>（被排挤、被针对、背后议论）——这类谈不拢，需要外部介入。</dd>
+      <dt>收益</dt><dd class="gain">解决冲突的核心是把"感受"翻译成"具体的、可执行的要求"。比如不说"你太吵了"，而说"11 点后能不能戴耳机"。前者是指责，后者是方案。</dd>
+      <dt>为什么</dt><dd class="why">前三类里，前两类占了绝大多数，且都能靠"定规则"解决。真正难的是第三类——但很多人把第三类当第一类处理，反复沟通无效，最后自己崩溃。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据统计宿舍矛盾的类型分布。本条为经验归纳，例：<a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。判断依据很简单：如果同一个问题你已经谈过两次以上还没有变化，那就不是"沟通技巧"问题，该升级处理方式。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>换宿舍：这是你的权利，但要按程序走</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">流程时间，通常需要几周；可能被调解、被劝回。</dd>
+      <dt>说人话</dt><dd class="plain">学生住宿由学校统一安排，但"换宿舍"不是不能申请。多数学校的学生住宿管理规定里有调宿条款，条件通常是：身体原因、作息严重冲突、人际关系严重不和、或有其它正当理由。关键在于——<strong>要有书面申请和具体事实，不能只说"我想换"</strong>。</dd>
+      <dt>收益</dt><dd class="gain">住宿管理属学校自主管理事项，依据各校《学生住宿管理规定》执行。学生有申请调宿的权利，学校有审核的义务，但批准与否由学校决定。</dd>
+      <dt>为什么</dt><dd class="why">这条的实际作用是"让申请变得可操作"。空口说"我和室友合不来"通常会被劝回；写清楚"具体事件 + 时间 + 已尝试的解决方式 + 影响"（比如影响睡眠导致上课状态），通过率高得多。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开的统一文件规定调宿条件（各校自定）。查询入口：<a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。如果涉及人身安全（威胁、暴力、骚扰），不要走"调宿申请"，直接报告辅导员和保卫处，走安全事件流程。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>社团：值不值得进，看它给你什么</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">会费、活动时间，可能每周数小时。</dd>
+      <dt>说人话</dt><dd class="plain">社团的价值有三种：<strong>技能</strong>（真的能学到东西，比如技术类、辩论类）、<strong>经历</strong>（能写进简历的组织经验）、<strong>关系</strong>（认识人）。绝大多数社团只提供第三种，而第三种恰恰是最难量化、最容易高估的。</dd>
+      <dt>收益</dt><dd class="gain">判断一个社团值不值，问三个问题：① 一年后我能拿出什么产出（作品、活动、职位）？② 我能不能在这里学到可迁移的技能？③ 如果只是"认识人"，这些人脉在我毕业后还有用吗？</dd>
+      <dt>为什么</dt><dd class="why">很多学生把社团当"社交刚需"，结果投入大量时间在低价值事务上（搬桌子、贴海报、开无效会议）。真正值得投入的社团，通常有一个特征：<strong>它有对外交付物</strong>（比赛、作品、公开活动），而不是只有内部活动。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据。本条为经验判断</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。如果你已经在一个社团里投入很久却没有成长感，不必因为"不好意思退"而继续——沉没成本不是继续的理由。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>校园欺凌：先固定证据，再决定怎么处理</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">维权要花时间和精力，可能面临关系压力。</dd>
+      <dt>说人话</dt><dd class="plain">校园欺凌不只是"打架"。它包括殴打、辱骂、孤立、散布谣言、网络攻击、毁坏财物等。遇到之后，第一步不是"忍"也不是"打回去"，而是<strong>固定证据</strong>：截图、录音、保存聊天记录、找目击同学。有了证据，后面的每一步才有支点。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国未成年人保护法》和教育部《未成年人学校保护规定》对校园欺凌有专门规定；对高校学生，欺凌行为可依《普通高等学校学生管理规定》第五十二条关于"侵犯他人人身权利"的条款给予纪律处分。情节严重的，可能触及《治安管理处罚法》乃至《刑法》。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调证据？因为学校处理需要事实依据，公安介入更需要证据。很多案例最后不了了之，不是没人管，而是"只有陈述、没有证据"。固定证据这件事，越早做成本越低。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2021). 未成年人学校保护规定（教育部令第 50 号）. <a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>；教育部 (2017). 普通高等学校学生管理规定（第五十二条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">涉及人身伤害或威胁，直接报警（110）。同时告知辅导员和学校保卫处，形成书面记录。<strong>不要单独"约谈"对方</strong>——这类对峙往往升级冲突，且没有第三方见证。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>同学关系：它的真实价值比你想的低，但也不是零</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 小</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">几乎为零——不需要刻意经营。</dd>
+      <dt>说人话</dt><dd class="plain">大学同学关系的实际价值，主要在两头：<strong>极少数深交的朋友</strong>（能持续几十年），和<strong>弱连接的信息渠道</strong>（谁在哪个公司、哪个行业有坑）。中间那一大段"点头之交"，价值接近零，但也不需要成本。</dd>
+      <dt>收益</dt><dd class="gain">社会学的"弱连接理论"指出，人们从弱关系（不常联系的人）获得的信息往往比强关系更有价值——因为强关系的信息高度重叠。这个结论在求职场景中尤其明显。</dd>
+      <dt>为什么</dt><dd class="why">这条的意义是"降低焦虑"。不必因为"我没有很多朋友"而焦虑，也不必刻意维护大量关系。真正有用的是：保持基本的善意和可见度，让需要的时候能找到人。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">Granovetter, M. (1973). The Strength of Weak Ties. American Journal of Sociology, 78(6), 1360-1380. <a href="https://www.journals.uchicago.edu/doi/10.1086/225469">https://www.journals.uchicago.edu/doi/10.1086/225469</a></dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——弱连接理论有实证支持，但它是社会学的一般结论，不是针对中国大学生的专门研究。具体到个人，仍然取决于你所在的行业和圈子。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch12">
+    <h2>12. AI 时代：普通人怎么用，怎么不被坑</h2>
+    <div class="intro"><p>这一章写给"不是程序员、也不打算成为程序员"的普通学生。</p><p>2023 年之后，"会用 AI"从一项专长变成了和"会用搜索引擎"同级的通用技能。但大部分人卡在两件事上：<strong>不知道怎么问</strong>，<strong>不知道什么时候不能信</strong>。这一章只解决这两个问题。</p><p>本章条目：</p><p>- 第 1 条：AI 最擅长和最不擅长的事，先分清</p><p>- 第 2 条：提问的四个要素，比"提示词模板"更管用</p><p>- 第 3 条：AI 说的"事实"，怎么核实</p><p>- 第 4 条：学生用 AI 的合规边界（作业、论文）</p><p>- 第 5 条：免费的够不够用，什么时候该付费</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>AI 擅长什么、不擅长什么：先分清再使用</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">零成本，理解一次终身受用。</dd>
+      <dt>说人话</dt><dd class="plain">AI 擅长的是<strong>变换和生成</strong>：把一段话改成更正式的、把长文压缩成摘要、把思路扩写成结构、写一版初稿、做表格、翻译、解释概念。AI 不擅长的是<strong>事实性准确</strong>：具体数字、人名、法条编号、论文引用、实时信息——这些它会给得很自信，但经常是错的。</dd>
+      <dt>收益</dt><dd class="gain">这个划分来自 AI 的基本原理：大语言模型的工作方式是基于概率生成文本，而不是查询数据库。所以它在"语言任务"上表现优异，在"需要精确事实"的任务上不可靠。这不是"能力不够"，是原理决定的。</dd>
+      <dt>为什么</dt><dd class="why">理解这一点，就能避免最常见的两类错误：用 AI 查事实（错），或者不用 AI 处理文字（浪费）。判断标准可以简化成一个问题——<strong>这件事错了会有什么后果？</strong> 后果严重的（医疗、法律、学术引用）必须自己核实。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">这一判断基于大语言模型的技术原理（统计语言建模）与广泛评测结果。具体模型能力差异见各模型技术报告，例：<a href="https://arxiv.org/">https://arxiv.org/</a>（检索路径：按关键词或标题检索预印本，核对技术报告）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——原理清楚，但"哪些任务会错"随模型版本变化。新模型在事实性上有改善，但<strong>不能假设它已经可靠</strong>。任何要写进作业、论文、报告的引用，都必须自己查。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>提问的四要素：比"提示词模板"更管用</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">零成本，每次多写两句话。</dd>
+      <dt>说人话</dt><dd class="plain">网上流传的"100 个提示词模板"，大部分记不住也用不上。真正管用的是四个要素：<strong>角色</strong>（你是做什么的）、<strong>任务</strong>（要完成什么）、<strong>约束</strong>（有什么限制：字数、风格、不能出现什么）、<strong>例子</strong>（给一个你想要的样例）。这四样说清楚，效果通常好于套模板。</dd>
+      <dt>收益</dt><dd class="gain">一个具体对比——"帮我写个简历"，AI 会给你一份通用的、没用的东西；"我是计算机专业大三学生，投后端开发实习，简历要一页，突出两个项目和一个竞赛，不要写自我评价"，AI 给的东西可以直接用。</dd>
+      <dt>为什么</dt><dd class="why">为什么四要素有效？因为它把"隐性要求"变成了"显性信息"。人跟人沟通时有很多默认共识，AI 没有。你不说清楚，它就按"平均情况"生成——而平均情况对你没用。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据能证明「四要素优于模板」。本条为使用经验归纳，例：<a href="https://arxiv.org/">https://arxiv.org/</a>（检索路径：按关键词或标题检索预印本，核对技术报告）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。它不保证效果好，只是说清楚这四件事几乎总没坏处。如果结果不满意，优先补充"约束"和"例子"，而不是换模型。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>AI 说的"事实"，怎么核实</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">每条核实多花几十秒到几分钟。</dd>
+      <dt>说人话</dt><dd class="plain">AI 会"一本正经地编"。这个现象有专门名字——幻觉（hallucination）。典型表现是：编造不存在的论文、给出错误的法条编号、虚构统计数据、把两件事的真实信息拼接成一个假信息。识别方法只有一个：<strong>凡是带具体数字、编号、人名的，都去原始来源查一遍</strong>。</dd>
+      <dt>收益</dt><dd class="gain">核实的三条路径：① 数字和统计——找官方发布（统计局、部委官网）；② 法条和规章——查国家法律法规数据库；③ 论文和文献——查知网、Google Scholar、PubMed，看是否真实存在。</dd>
+      <dt>为什么</dt><dd class="why">为什么不能靠"AI 说得很确定"来判断？因为幻觉的输出在语言特征上和真实输出完全一样——同样流畅、同样自信。模型不会"知道自己不知道"。所以可靠性判断必须来自外部核实，不能来自语气。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">国家法律法规数据库（法条核实）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；国家统计局（数据核实）. <a href="https://www.stats.gov.cn/">https://www.stats.gov.cn/</a>；学术文献核实 <a href="https://scholar.google.com/">https://scholar.google.com/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款；国家统计局 → 统计数据 / 年鉴查询；按论文标题检索，核对是否真实存在）</dd>
+      <dt>备注</dt><dd class="note"><strong>最危险的场景是把 AI 生成的引用直接写进论文。</strong> 已有多起案例因虚构文献被判定学术不端。任何参考文献，必须自己在数据库里查到原文才能引用。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>学生用 AI 的边界：作业、论文、考试</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">违规的代价可能是课程不及格、记过，甚至影响学位。</dd>
+      <dt>说人话</dt><dd class="plain">能不能用 AI，不取决于"AI 好不好用"，取决于<strong>你的学校/老师怎么规定</strong>。目前各校规定差异很大：有的明确禁止在论文中使用，有的要求声明使用情况，有的只在考试中禁止。唯一可靠的做法是查你所在学校、学院、课程的明确规定。</dd>
+      <dt>收益</dt><dd class="gain">学术规范层面，《高等学校预防与处理学术不端行为办法》（教育部令第 40 号）规定了学术不端行为的类型与处理；各高校据此制定本校细则，其中对"代写""剽窃"的界定正在逐步覆盖 AI 生成内容。具体认定标准由各校规定。</dd>
+      <dt>为什么</dt><dd class="why">这条之所以是"不可逆"，因为学术不端记录可能进入档案，影响考研、考公、出国。而且现在多数学校已有 AIGC 检测手段，被发现的概率不低。<strong>用 AI 之前先查规定，比用完再解释要安全得多。</strong></dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2016). 高等学校预防与处理学术不端行为办法（教育部令第 40 号）. <a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>；各校具体规定需查本校教务处/研究生院文件（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note">即使学校没有明文规定，<strong>"AI 生成 + 不声明 + 当作业提交"在多数教师的判断里属于不诚信</strong>。稳妥做法：能用 AI 辅助构思和修改，但核心内容自己写，并按要求声明。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>免费的够不够用：什么时候该付费</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">主流 AI 服务订阅通常每月 20 美元左右（国内产品价格不同）。</dd>
+      <dt>说人话</dt><dd class="plain">对绝大多数学生来说，免费版够用。免费版的主要限制是：每天调用次数、高峰期限流、不能用最新最强的模型、上下文长度较短。只有当"你每天都在用、且被限流卡住"时，付费才划算。</dd>
+      <dt>收益</dt><dd class="gain">判断标准是"时间价值"：如果你每小时能创造的价值 &gt; 订阅费 / 每月节省的小时数，就值得付费。学生阶段通常不满足这个条件。</dd>
+      <dt>为什么</dt><dd class="why">这类订阅的真实成本不是钱，是"订阅惯性"——很多人订了就忘了取消，一年下来是一笔不小的支出。建议：先免费用一个月，确认自己真的每天都在用，再考虑付费。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据能证明「四要素优于模板」。本条为使用经验归纳，例：<a href="https://arxiv.org/">https://arxiv.org/</a>（检索路径：按关键词或标题检索预印本，核对技术报告）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。另外，学生身份在部分产品上有教育优惠，购买前先查一下。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch13">
+    <h2>13. 校内经济与熟人行骗</h2>
+    <div class="intro"><p>这一章讲两件事：<strong>怎么在校内合法赚点钱</strong>，以及<strong>为什么熟人比陌生人更容易骗到你</strong>。</p><p>学生赚钱的渠道看似很多——代取快递、跑腿、家教、二手转卖、开个小店。但每一类都有法律边界：哪些需要执照、哪些涉及税务、哪些一旦出问题责任在你。</p><p>后半章讲骚扰和行骗。数据上，学生被骗的案例里，相当比例是通过熟人介绍的。这不是巧合，是可利用的心理机制。</p><p>本章条目：</p><p>- 第 1 条：校内的几种赚钱方式，哪些合法、哪些要执照</p><p>- 第 2 条：熟人推荐的项目，为什么更危险</p><p>- 第 3 条：兼职路线的三种典型陷阱（刷单的完整拆解）</p><p>- 第 4 条：代购、代取、代跑腿的责任划分</p><p>- 第 5 条：被熟人坑了之后，怎么处理才不撕破脸也不吃亏</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>校内的几种赚钱方式：先分清要不要执照</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">多数方式启动成本很低（几十到几百元），但需要投入时间。</dd>
+      <dt>说人话</dt><dd class="plain">校内常见赚钱方式分三类。<strong>劳务型</strong>（跑腿、代取、家教、兼职）——不需要执照，收入按次结算；<strong>经营型</strong>（摆摊、开网店、卖自制商品）——可能涉及营业执照与税务；<strong>中介型</strong>（介绍兼职、拉人进群）——最容易出问题，因为一旦你收了钱，就要为对方的行为负责。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国电子商务法》第十条规定，电子商务经营者应当依法办理市场主体登记；但「个人销售自产农副产品、家庭手工业产品，个人利用自己的技能从事依法无须取得许可的便民劳务活动和零星小额交易活动」不需要登记。《无证无照经营查处办法》第三条也规定了类似的豁免情形。</dd>
+      <dt>为什么</dt><dd class="why">这条的关键是"零星小额"这个模糊地带。代取快递几十块、卖自己不要的书，属于零星小额；但如果你批量进货转卖、或者长期固定经营，就越过了这条线。判断标准不是"赚了多少"，而是"是不是持续性经营"。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2018). 中华人民共和国电子商务法（第十条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；国务院 (2017). 无证无照经营查处办法（第三条）. <a href="https://www.gov.cn/">https://www.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款；中国政府网 → 政策文件库 → 按文件名或发文字号检索）</dd>
+      <dt>备注</dt><dd class="note">校内摆摊还要看学校规定（多数学校禁止未经审批的商业活动）。真要做，先问学校保卫处或学生工作部门，别等被清理了才问。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>熟人推荐的项目，为什么反而更危险</h3>
+      <div class="tags"><span class="tag">钱 · 大</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">一旦入局，损失可能从几百到几万元。</dd>
+      <dt>说人话</dt><dd class="plain">传销和资金盘最常用的入口不是陌生人，而是<strong>熟人和同学</strong>。原因很简单：你对熟人没有防备，而他可能也是受害者（被上线洗脑，真心觉得这是好机会）。所以"我同学也在做"这句话，不能作为判断依据——他可能和你一样，什么都不知道。</dd>
+      <dt>收益</dt><dd class="gain">《禁止传销条例》第二条规定：「本条例所称传销，是指组织者或者经营者发展人员，通过对被发展人员以其直接或者间接发展的人员数量或者销售业绩为依据计算和给付报酬，或者要求被发展人员以交纳一定费用为条件取得加入资格等方式牟取非法利益，扰乱经济秩序，影响社会稳定的行为。」第七条规定了三种传销行为的具体形式。</dd>
+      <dt>为什么</dt><dd class="why">传销的识别标志从来不是"听起来不靠谱"，而是三个结构特征：<strong>交钱入门</strong>（要交费才能加入）、<strong>拉人计酬</strong>（收入来自发展下线，不是卖货）、<strong>层级返利</strong>（按层级计算报酬）。三个里出现任意两个，就该停下来。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">国务院 (2005). 禁止传销条例（国务院令第 444 号，第二、七条）. <a href="https://www.gov.cn/">https://www.gov.cn/</a>（检索路径：中国政府网 → 政策文件库 → 按文件名或发文字号检索）</dd>
+      <dt>备注</dt><dd class="note"><strong>"我只是帮朋友个忙"也可能构成违法</strong>——介绍、诱骗、胁迫他人参加传销的，条例第二十四条有明确处罚。参与传销本身也可能被处罚，不论你是否知情。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>刷单：完整的骗局拆解</h3>
+      <div class="tags"><span class="tag">钱 · 大</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">多数受害者损失几百到几万元，且追回率低。</dd>
+      <dt>说人话</dt><dd class="plain">刷单诈骗有固定的剧本，认清这五步就不会上当：① <strong>引流</strong>（QQ群、兼职广告、私信"日结 300"）；② <strong>小额返利</strong>（第一单真的返钱，10 元、20 元，建立信任）；③ <strong>加大投入</strong>（"这单金额大，返利也高"，让你垫 500、2000）；④ <strong>卡单/冻结</strong>（"系统检测异常，需要再充一笔解冻"）；⑤ <strong>消失</strong>（拉黑、群解散）。</dd>
+      <dt>收益</dt><dd class="gain">刷单行为本身在规范层面是被禁止的。《反不正当竞争法》第八条规定，经营者不得对其商品的销售状况、用户评价等作虚假或者引人误解的商业宣传，也不得通过组织虚假交易等方式帮助其他经营者进行虚假宣传。刷单即属此列。</dd>
+      <dt>为什么</dt><dd class="why">关键节点在第三步。<strong>任何要求你先垫付的"工作"，都不是工作。</strong> 真正的兼职是"你干活，他付钱"，顺序不能反过来。骗子之所以能得手，就是因为前两单真的给了钱——用真实的小额收益，换你对大额的信任。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2019 修正). 中华人民共和国反不正当竞争法（第八条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；诈骗的刑事责任见《刑法》第二百六十六条（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>参与刷单本身也违法</strong>——你可能被平台封号、被追究帮助虚假宣传的责任。即使你只是"想赚点零花钱"，也不是无辜的第三方。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>代购、代取、代跑腿：出了问题责任在谁</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">通常几十元一单，但一次事故可能赔上千元。</dd>
+      <dt>说人话</dt><dd class="plain">代取快递、代买东西这类交易，法律上属于委托合同或承揽合同。核心问题是：<strong>东西丢了、坏了、送错了，谁赔？</strong> 默认规则是：受托人（你）因过错造成损失的，要赔偿；但如果双方事先约定了"只负责取送、不承担物品损坏责任"，按约定处理。</dd>
+      <dt>收益</dt><dd class="gain">《民法典》第九百二十九条规定：「有偿的委托合同，因受托人的过错造成委托人损失的，委托人可以请求赔偿损失。」第九百三十条规定受托人处理委托事务时，因不可归责于自己的事由受到损失的，可以向委托人请求赔偿损失。</dd>
+      <dt>为什么</dt><dd class="why">这条的现实意义是"事先说清楚"。代取高价物品（手机、电脑）时，如果不约定责任，出了问题就是各说各话。最简单的做法：接单时发一句"代取只负责送到，物品本身损坏不负责，贵重物品请自行取"，留个记录。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2020). 中华人民共和国民法典（第九百二十九、九百三十条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>帮人代取涉违法物品（如代收不明包裹）风险极高</strong>，可能被认定为共同违法。只接认识的人的、内容明确的单。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>被熟人坑了：怎么处理才不撕破脸也不吃亏</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">时间与情绪成本，可能需要几次沟通。</dd>
+      <dt>说人话</dt><dd class="plain">被熟人坑（借钱不还、合作分账不公、推荐了坑人的项目），最难的不是维权，是"要不要撕破脸"。建议的顺序是：<strong>先私下确认事实</strong>（可能对方也没意识到）→ <strong>明确表达诉求</strong>（要什么，什么时候）→ <strong>留书面记录</strong>（微信文字也算）→ <strong>再考虑外部途径</strong>。</dd>
+      <dt>收益</dt><dd class="gain">民事纠纷的解决途径包括协商、调解、仲裁、诉讼。金额较小的可走小额诉讼程序（各地基层法院设有）。借贷关系的证据核心是：转账记录 + 借款合意的证明（聊天记录、借条）。</dd>
+      <dt>为什么</dt><dd class="why">很多人卡在第一步——不好意思开口。结果是拖着，越拖越难要，最后关系也没了。实际上，<strong>及时、明确地提出诉求，反而更可能保住关系</strong>，因为对方知道你认真，也知道边界在哪。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">《民法典》合同编相关规定 <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；小额诉讼程序见《民事诉讼法》相关规定（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">金额较大或对方失联，尽早咨询法律援助（12348）。<strong>不要在气头上删除聊天记录</strong>——那是你唯一的证据。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch14">
+    <h2>14. 找实习、求职：从投递到入职的完整流程</h2>
+    <div class="intro"><p>这一章不劝你努力，只把<strong>流程和数据</strong>讲清楚：什么时候投、投什么、offer 怎么比、入职前的坑在哪。</p><p>&gt; ⚠️ <strong>这一章涉及劳动法与合同，请把它当"发现问题"的清单，不要当诊断或法律意见</strong></p><p>&gt; 内容最后核对：2026-10-29。政策与指南会更新，动手前请以官方原文为准。</p><p>&gt; <strong>出现下列情况，先找专业人士，不要照着本书操作</strong>：已经签了带竞业限制或高额违约金的合同、被欠薪、被违法辞退、发生工伤——找当地劳动仲裁委或律师，注意仲裁时效通常为一年。</p><p>求职最大的问题不是"能力不够"，而是"不知道时间线"——多数行业的秋招 9 月就开始了，很多人 10 月才开始准备，那时好岗位已经招得差不多了。</p><p>本章条目：</p><p>- 第 1 条：校招时间线：多数行业秋招为主、春招补缺</p><p>- 第 2 条：实习和求职的简历，写法完全不同</p><p>- 第 3 条：三份 offer 怎么比：算总包，不算月薪</p><p>- 第 4 条：签约前的四件事，不做会后悔</p><p>- 第 5 条：试用期、违约金、竞业限制的法定边界</p><p>- 第 6 条：入职后被欠薪、被违法辞退，怎么维权</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>校招时间线：多数行业秋招为主、春招补缺（但不是铁律）</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">准备时间从大三下（或研二下）开始，持续半年以上。</dd>
+      <dt>说人话</dt><dd class="plain">校园招聘分两季：<strong>秋招</strong>（通常 9–11 月）在多数行业是主战场，岗位最多；<strong>春招</strong>（次年 3–4 月）多是补缺，岗位相对少。这意味着：如果秋招没赶上，你的选择面通常会缩小。</dd>
+      <dt>收益</dt><dd class="gain">这不是法规规定，而是企业招聘节奏形成的行业惯例。国企、大厂的校招公告通常在每年 8–9 月发布，部分企业更早（提前批在 7 月）。</dd>
+      <dt>为什么</dt><dd class="why">为什么秋招这么重要？因为企业编制是有限的，秋招招满了，春招就没有坑；而且秋招进来的应届生，能在毕业前完成实习、毕业时直接转正。所以"晚一点再找"这个选择，代价是机会数量。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开的统一文件规定校招时间。本条为招聘实践惯例，具体以各企业公告为准。查询入口：国家大学生就业服务平台. <a href="https://www.ncss.cn/">https://www.ncss.cn/</a>（检索路径：国家大学生就业服务平台 → 政策 / 就业指导栏目）</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>支撑时间线，因为各行业差异很大（互联网更早，制造业相对晚）。但有一条是确定的：<strong>提前半年开始准备，永远不吃亏</strong>。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>实习简历与求职简历：重点完全不同</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">改简历几小时，但决定了你有没有面试机会。</dd>
+      <dt>说人话</dt><dd class="plain">投<strong>实习</strong>时，HR 看的是"你能不能干活、好不好带"——重点是课程项目、校园经历、学习能力；投<strong>正式工作</strong>时，HR 看的是"你能不能独立交付"——重点是实习成果、项目复杂度、可量化产出。用同一份简历投两边，效果都会打折。</dd>
+      <dt>收益</dt><dd class="gain">判断简历是否合格，用一个标准：<strong>每一行能不能被追问三轮</strong>。写"参与了 XX 项目"，被问"你具体做了什么、怎么做的、结果如何"就答不上来，那这行就是废话，该删。</dd>
+      <dt>为什么</dt><dd class="why">简历的本质是"面试话题的索引"。你写的每一行，都是在邀请对方问这个问题。所以写不出来的事，不要写；写得出来的事，才值得占一行。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可量化简历写法对通过率的影响。本条为招聘实践归纳</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。一个可操作的做法：找一位已经工作的学长学姐，把你的简历发过去，看他能不能在 30 秒内说出"你想找什么岗位"——说不出就是没写清楚。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>三份 offer 怎么比：算总包，不算月薪</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">算清楚需要一两小时，但可能影响未来几年的收入。</dd>
+      <dt>说人话</dt><dd class="plain">比较 offer 时，月薪是最容易误导的指标。要比的是<strong>年总包</strong>：月薪 × 月数 + 年终奖 + 补贴 + 公积金差额 + 股权（折算）。此外还有隐性因素：加班强度、通勤、城市生活成本、成长空间。</dd>
+      <dt>收益</dt><dd class="gain">收入相关的法定部分包括：最低工资标准（各地不同，由省级人民政府规定）、加班费计算基数、社保与公积金的缴纳比例。这些直接影响到手收入。</dd>
+      <dt>为什么</dt><dd class="why">为什么月薪会误导？因为不同公司的薪酬结构差别很大：有的 12 薪、有的 15 薪、有的把年终奖做得很重。同样月薪 10k，12 薪是 12 万，15 薪是 15 万，差 25%。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">最低工资标准见各地人社部门公布（省级人民政府确定）；社保与公积金比例见各地规定。查询入口：<a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>（检索路径：12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note"><strong>公积金是很多人忽略的一块</strong>——单位和个人各缴一部分，全部进你的账户，相当于隐性收入。同样月薪，公积金比例 5% 和 12% 差很多。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>签约前的四件事：不做会后悔</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">花一两个小时核实。</dd>
+      <dt>说人话</dt><dd class="plain">签三方或劳动合同前，必须做四件事：① <strong>查企业底细</strong>（工商登记、司法风险、经营异常）；② <strong>看清岗位与地点</strong>（有的 offer 写"管理培训生"，实际是销售外派）；③ <strong>确认薪资结构</strong>（底薪多少、绩效怎么算、有没有考核不达标就扣钱的条款）；④ <strong>问清违约金</strong>（三方协议里的违约条款）。</dd>
+      <dt>收益</dt><dd class="gain">企业信息可通过国家企业信用信息公示系统查询（工商登记、行政处罚、经营异常名录）；司法案件可通过中国裁判文书网查询。这两项是公开的官方渠道，不收费。</dd>
+      <dt>为什么</dt><dd class="why">这四件事的共同点是"信息不对称"——企业知道全部信息，你只知道它想让你知道的。而上面两个官方渠道，能把大部分不对称抹平。查一次，可能避免几年的痛苦。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">国家企业信用信息公示系统（市场监管总局）. <a href="https://www.gsxt.gov.cn/">https://www.gsxt.gov.cn/</a>；中国裁判文书网（最高人民法院）. <a href="https://wenshu.court.gov.cn/">https://wenshu.court.gov.cn/</a>（检索路径：输入企业全称 → 查看工商登记、行政处罚、经营异常；输入企业或当事人名称 → 检索相关裁判文书）</dd>
+      <dt>备注</dt><dd class="note">查企业时重点看三项：<strong>经营异常名录</strong>（是否失联）、<strong>行政处罚</strong>（是否被罚过）、<strong>司法案件</strong>（有没有大量劳动纠纷）。如果一家公司有几十起劳动仲裁案件，这就是明确的信号。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>试用期、违约金、竞业限制：法定边界</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解不花钱，但不知道会吃亏。</dd>
+      <dt>说人话</dt><dd class="plain">这三项都有法定上限，企业不能随意设定。<strong>试用期</strong>：合同 3 个月以上不满 1 年的，试用期不得超过 1 个月；1 年以上不满 3 年的，不得超过 2 个月；3 年以上或无固定期限的，不得超过 6 个月。<strong>试用期工资</strong>不得低于本单位相同岗位最低档工资或合同约定工资的 80%，且不得低于当地最低工资标准。<strong>违约金</strong>：只有两种情形可以约定——服务期（公司出钱培训）和竞业限制，其他情况不得约定违约金。</dd>
+      <dt>收益</dt><dd class="gain">《中华人民共和国劳动合同法》第十九条（试用期期限）、第二十条（试用期工资）、第二十二条（服务期违约金）、第二十三条（竞业限制）、第二十五条（除本法第二十二条和第二十三条规定的情形外，用人单位不得与劳动者约定由劳动者承担违约金）。</dd>
+      <dt>为什么</dt><dd class="why">这条是最实用的"防坑清单"——很多企业会在合同里写"提前离职赔 X 万"，如果这不符合服务期或竞业限制的情形，这个条款本身就是无效的。知道这一点，你就有了谈判的底气。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2012 修正). 中华人民共和国劳动合同法（第十九、二十、二十二、二十三、二十五条）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">竞业限制有两项限制：<strong>人员范围</strong>限于高级管理人员、高级技术人员和其他负有保密义务的人员；<strong>期限</strong>不得超过二年，且离职后单位需按月支付补偿。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>被欠薪、被违法辞退：维权路径</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">时间成本，仲裁流程通常 1–3 个月。</dd>
+      <dt>说人话</dt><dd class="plain">遇到欠薪或违法辞退，路径是固定的：<strong>先协商 → 再投诉（劳动监察）→ 再仲裁 → 最后诉讼</strong>。劳动仲裁是免费的，且是诉讼的前置程序（大部分劳动争议必须先仲裁）。关键是保留证据：劳动合同、工资流水、考勤记录、工作沟通记录。</dd>
+      <dt>收益</dt><dd class="gain">《劳动争议调解仲裁法》规定劳动争议申请仲裁的时效期间为一年，从当事人知道或应当知道其权利被侵害之日起计算。劳动争议仲裁不收费。</dd>
+      <dt>为什么</dt><dd class="why">很多人不走仲裁，是因为"怕麻烦""怕影响下一份工作"。但实际上仲裁记录不公开（裁判文书网的公开是有限的），而放弃维权的结果是钱要不回来。另外，劳动监察投诉（12333）成本更低，可以先试。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2007). 中华人民共和国劳动争议调解仲裁法（第二十七条 时效、第五十三条 不收费）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；投诉渠道：12333 人力资源社会保障服务热线. <a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款；12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note"><strong>时效是一年</strong>，从知道权利被侵害起算。很多人拖过一年才发现无法维权。离职时如果有争议，尽快启动程序。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch15">
+    <h2>15. 地方政策与补贴：能领的钱，去哪查</h2>
+    <div class="intro"><p>这一章解决一个具体问题：<strong>你所在的城市有哪些钱可以领，怎么查。</strong></p><p>绝大多数学生不知道有这些东西——不是因为没有资格，而是因为没人告诉过他们。而这些政策有个共同点：<strong>不主动申请就没有</strong>。</p><p>本章条目：</p><p>- 第 1 条：先建立一个观念：补贴要自己申请</p><p>- 第 2 条：大学生最常能领的四类钱</p><p>- 第 3 条：怎么查你所在城市的政策（三个官方入口）</p><p>- 第 4 条：落户与人才引进：条件写在哪个文件里</p><p>- 第 5 条：申请材料与流程的通用套路</p><p>- 第 6 条：几个容易踩的坑</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>先建立一个观念：补贴不会自动到账</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">了解这一点不花钱，但可能让你多拿几千到几万块。</dd>
+      <dt>说人话</dt><dd class="plain">政府补贴的绝大部分是"依申请发放"，不是"依资格自动发放"。也就是说，你符合条件但你不知道、不申请，这笔钱就留在财政里了。常见的误解是"符合条件的应该自动有了吧"——不会。</dd>
+      <dt>收益</dt><dd class="gain">各类就业补贴、创业补贴、人才补贴的政策文件通常写明"符合条件的，可申请……"，并附有申请流程、受理部门和时效。这个表述本身就说明：主动权在申请人。</dd>
+      <dt>为什么</dt><dd class="why">为什么会有这种设计？因为发放需要核实材料、需要预算拨付、需要防止骗补。所以流程一定是"申请—审核—拨付"，而不是"系统识别—自动打钱"。理解这一点，你就会主动去查，而不是等待。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">各类补贴政策的通用表述方式，见各地人社部门公开的政策文件。查询入口：<a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>（检索路径：12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——"依申请发放"是通行做法，但个别地方确实有"免申即享"改革试点（如部分社保待遇）。具体以当地政策为准。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>大学生最常能领的四类钱</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">申请需准备材料、跑流程，通常几天到几周。</dd>
+      <dt>说人话</dt><dd class="plain">按发生频率排，学生群体最常涉及的四类是：① <strong>求职创业补贴</strong>（毕业年度有就业意愿的困难毕业生）；② <strong>就业见习补贴</strong>（参加就业见习的毕业生）；③ <strong>创业担保贷款及贴息</strong>（自主创业）；④ <strong>人才引进补贴</strong>（部分城市对新引进的毕业生发放租房、生活补贴）。</dd>
+      <dt>收益</dt><dd class="gain">前三类属于就业促进政策范畴，依据《就业促进法》及各地实施细则；第四类属地方人才政策，由各市自行制定。</dd>
+      <dt>为什么</dt><dd class="why">这四类的共同点是"有明确的政策依据 + 有明确的受理部门"。你不需要猜，只要找到当地人社局的对应政策页面，按流程申请即可。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会常务委员会 (2015 修正). 中华人民共和国就业促进法. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；具体补贴标准与条件见各地人社部门文件，查询入口：<a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款；12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note">金额和条件<strong>各地差异极大</strong>，一线城市与三四线城市可能差几倍。不要拿别人的城市标准套自己所在城市，务必查本地文件。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>查政策的三个官方入口</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">花半小时，可能找到几千块。</dd>
+      <dt>说人话</dt><dd class="plain">查地方政策，认准三个入口：① <strong>人社局官网</strong>（就业创业、社保、补贴都在这）；② <strong>12333 热线</strong>（打电话问，最直接）；③ <strong>政务服务网/App</strong>（在线申请入口，很多城市有"一件事"集成办理）。不要靠搜索引擎的前几条广告。</dd>
+      <dt>收益</dt><dd class="gain">12333 是人力资源社会保障部的全国统一公益服务电话，提供就业、社保、劳动关系等政策咨询。各地政务服务网提供在线办理入口。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调官方入口？因为政策类信息是"高价值 + 高时效"的，而搜索引擎结果里混杂着中介、代办、培训机构的内容，容易把你引向付费服务。而 12333 是免费电话，问错也没有成本。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">12333 全国人力资源社会保障服务热线. <a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>；各地政务服务网（检索路径：12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note">打 12333 的技巧：直接说"我是 XX 年毕业的 XX 学历，想咨询 XX 补贴的申请条件"，比问"有什么补贴"得到的信息更具体。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>落户与人才引进：条件写在哪个文件里</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag half">口径 · 半可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">落户流程通常需要数周，材料齐全的话较快。</dd>
+      <dt>说人话</dt><dd class="plain">落户政策是<strong>城市自己定的</strong>，没有全国统一标准。同样是本科毕业生，A 城市可能直接落户，B 城市要求社保满几年。所以"我这个学历能不能落户"这个问题，只能查具体城市。</dd>
+      <dt>收益</dt><dd class="gain">户籍管理依《户口登记条例》，但具体的落户条件（学历、社保年限、年龄）由各城市人民政府制定并公布。常见类型包括：应届毕业生落户、人才引进落户、积分落户、投靠落户。</dd>
+      <dt>为什么</dt><dd class="why">落户为什么重要？因为它绑定了购房资格、子女教育、部分公共服务。而这个决定的不可逆性在于：<strong>落户后想迁走，成本比落户高得多</strong>。所以在落之前要想清楚长期规划。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">全国人大常委会 (1958). 中华人民共和国户口登记条例. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>；各城市落户政策见当地政府或公安部门官网（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——法律框架统一，但具体条件各市自定且经常调整。<strong>毕业当年是最容易落户的窗口</strong>（应届生通道），错过就要走社招通道，条件更严。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>申请材料的通用套路</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">准备材料半天到几天。</dd>
+      <dt>说人话</dt><dd class="plain">几乎所有补贴申请都要这几类材料：<strong>身份证明</strong>（身份证、户口本）、<strong>学历证明</strong>（毕业证、学信网报告）、<strong>就业状态证明</strong>（劳动合同、社保缴纳记录、失业登记）、<strong>银行卡</strong>（本人账户）、<strong>申请表</strong>（现场填或线上下载）。提前把这些准备好，能省很多来回。</dd>
+      <dt>收益</dt><dd class="gain">学历证明可通过学信网在线申请《教育部学历证书电子注册备案表》，用于各类申请。社保缴纳记录可通过 12333 或当地人社 App 查询打印。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调"提前准备"？因为很多补贴有申请时效（比如"毕业两年内"），而材料准备往往要跑几趟。如果卡在时效边缘，材料不全会直接导致错过。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">中国高等教育学生信息网（学信网）学历认证入口. <a href="https://www.chsi.com.cn/xlrz/index.jsp">https://www.chsi.com.cn/xlrz/index.jsp</a>；社保查询：<a href="https://www.12333.gov.cn/">https://www.12333.gov.cn/</a>（检索路径：12333 平台 → 政策查询，或直接拨 12333 问当地窗口）</dd>
+      <dt>备注</dt><dd class="note">学信网的《教育部学历证书电子注册备案表》可以设置有效期，申请补贴时按需延长。建议毕业时就先申请一份存着。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>几个容易踩的坑</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">踩坑的代价可能是几百到几千元。</dd>
+      <dt>说人话</dt><dd class="plain">四个高频坑：① <strong>信了中介代办</strong>（收费几千，其实自己能办）；② <strong>错过申请时效</strong>（多数补贴有明确截止时间）；③ <strong>社保断缴影响资格</strong>（部分补贴要求连续缴纳）；④ <strong>重复申领</strong>（同一项目多地申请，会被追回并可能影响信用）。</dd>
+      <dt>收益</dt><dd class="gain">骗取补贴属于违法行为，可能构成诈骗，依《刑法》第二百六十六条处理；被追回的还会记入信用记录。</dd>
+      <dt>为什么</dt><dd class="why">四个坑里，前三个是"信息问题"，第四个是"法律问题"。提醒一句：很多人以为"多申请几个城市没关系"，实际现在政务系统已联网，重复申领很容易被发现。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">全国人民代表大会 (2020). 中华人民共和国刑法（第二百六十六条 诈骗罪）. <a href="https://flk.npc.gov.cn/">https://flk.npc.gov.cn/</a>（检索路径：国家法律法规数据库 → 按标题搜索法律名 → 打开全文找条款）</dd>
+      <dt>备注</dt><dd class="note"><strong>凡是收费代办补贴的，一律不必要</strong>——这些申请都是免费的公共服务。遇到收费代办的，直接打 12333 核实。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch16">
+    <h2>16. 身体：睡眠、性健康、烟酒</h2>
+    <div class="intro"><p>这一章讲三件事，都是学生阶段容易出问题、又不好意思问的：<strong>熬夜的真实代价</strong>、<strong>性行为的风险控制</strong>、<strong>烟酒的成瘾机制</strong>。</p><p>不劝，也不吓唬。只把机制和事实摆清楚。</p><p>&gt; ⚠️ <strong>这一章涉及医疗与用药，请把它当"发现问题"的清单，不要当诊断或法律意见</strong></p><p>&gt; 内容最后核对：2026-10-29。政策与指南会更新，动手前请以官方原文为准。</p><p>&gt; <strong>出现下列情况，先找专业人士，不要照着本书操作</strong>：发生了高危性行为（72 小时内可评估 PEP）、出现可疑症状、正在长期服药或有基础病——去医院感染科 / 皮肤性病科，不要自行用药。</p><p>本章条目：</p><p>- 第 1 条：长期熬夜的代价，比"困"严重</p><p>- 第 2 条：安全套是唯一能同时避孕和降低性病风险的方式</p><p>- 第 3 条：性病有窗口期，"查了没事"不等于没事</p><p>- 第 4 条：发生高危行为后，72 小时内还有补救</p><p>- 第 5 条：吸烟的成瘾机制，为什么"只抽一根"是陷阱</p><p>- 第 6 条：喝酒的代谢事实与脸红基因</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>长期熬夜：代价不止是困</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">改变作息需要 2–4 周适应期。</dd>
+      <dt>说人话</dt><dd class="plain">偶尔熬夜，第二天补一觉基本能恢复。但<strong>长期睡眠不足</strong>（每晚少于 6 小时，持续数周以上）的影响是累积的：注意力下降、情绪波动、免疫力降低、代谢紊乱。它不是"困一点"的问题，是身体在多个系统上同时受损。</dd>
+      <dt>收益</dt><dd class="gain">成年人推荐的睡眠时长为每晚 7–9 小时，这一建议来自睡眠医学领域的共识，多家权威机构（如美国睡眠医学会、世界卫生组织相关建议）表述一致。</dd>
+      <dt>为什么</dt><dd class="why">为什么学生阶段特别容易熬夜？因为作息没有外部约束（不像上班有打卡），加上宿舍环境互相影响。而熬夜的代价是延迟出现的——当下只觉得爽，半年后才发现状态下滑，归因时又很难归到"睡得少"。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">睡眠时长的通行建议见睡眠医学领域共识；中国居民健康相关指导见国家卫生健康委员会. <a href="http://www.nhc.gov.cn/">http://www.nhc.gov.cn/</a></dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——"7–9 小时"是人群平均建议，个体差异存在。真正的判断标准是：白天是否持续困倦、是否需要靠咖啡因维持。如果是，就说明睡少了。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>安全套：唯一能同时避孕和降低性病风险的方式</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">几元到几十元，几乎可忽略。</dd>
+      <dt>说人话</dt><dd class="plain">避孕方式有很多（避孕药、宫内节育器、体外射精、安全期），但<strong>只有安全套同时能降低性传播感染的风险</strong>。其它方式都只解决"怀孕"，不解决"传染"。在非固定伴侣的情况下，这一点尤其关键。</dd>
+      <dt>收益</dt><dd class="gain">安全套（避孕套）属于第二类医疗器械，其生产与销售受国家药品监督管理部门监管。正确使用的前提下，既能避孕，也能显著降低性传播感染的风险。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调这一点？因为很多人有误区——以为吃了避孕药就安全了。避孕药只作用于排卵，对细菌、病毒、寄生虫没有防护作用。这个认知差，是学生群体中性病传播的重要原因之一。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">安全套的医疗器械管理见国家药品监督管理局相关规定. <a href="https://www.nmpa.gov.cn/">https://www.nmpa.gov.cn/</a>；性病预防知识见中国疾病预防控制中心. <a href="https://www.chinacdc.cn/">https://www.chinacdc.cn/</a>（检索路径：国家药监局 → 医疗器械分类目录查询；中国疾控中心 → 健康主题 / 政策文件栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>"体外"和"安全期"都不是可靠的避孕方式</strong>——失败率远高于安全套。另外，安全套要全程使用，中途才戴等于没用。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>性病有窗口期：查了阴性不等于安全</h3>
+      <div class="tags"><span class="tag">钱 · 少</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">检测费用从几十到几百元不等，各地疾控中心的自愿咨询检测（VCT）通常免费。</dd>
+      <dt>说人话</dt><dd class="plain">感染后不是立刻能查出来，中间有段时间叫"窗口期"——病毒或细菌已经进入体内、有传染性，但检测还测不到。不同疾病的窗口期差别很大：艾滋病通常 2–6 周（抗体检测），梅毒约 2–4 周，淋病和衣原体较短。所以"昨天查了没事"这句话，要看你查的是什么时候的行为。</dd>
+      <dt>收益</dt><dd class="gain">艾滋病自愿咨询检测（VCT）由各地疾控中心提供，多数免费且保密。中国疾控中心性病艾滋病预防控制中心提供检测点查询与技术指南。</dd>
+      <dt>为什么</dt><dd class="why">为什么要强调窗口期？因为"查了阴性就放心"是学生群体最危险的误解之一。如果一个高危行为发生在三天前，现在查出来的阴性结果没有意义——需要等到窗口期后再查。而这个误解，会让人错过真正的防护时机。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">中国疾病预防控制中心性病艾滋病预防控制中心（检测与咨询指南）. <a href="https://ncaids.chinacdc.cn/">https://ncaids.chinacdc.cn/</a>（检索路径：艾防中心 → 检测与治疗 / 技术指南栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>各地疾控中心的 VCT 门诊免费且保密</strong>，不需要实名、不会通知学校。这是最没有心理负担的检测途径。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>高危行为后 72 小时：还有阻断药</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">阻断药费用数千元，需连续服用 28 天；部分地区可医保或免费。</dd>
+      <dt>说人话</dt><dd class="plain">发生了可能感染艾滋病的高危行为（无保护性行为、安全套破裂等），在<strong>72 小时内</strong>服用暴露后预防用药（PEP），可以显著降低感染风险。<strong>越早越好，最好 2 小时内</strong>。这不是"事后避孕药"那种东西，是抗病毒药物，必须由医生开具并全程服用 28 天。</dd>
+      <dt>收益</dt><dd class="gain">暴露后预防（PEP）的用药方案与时限（72 小时内启动，疗程 28 天）见国家免费艾滋病抗病毒药物治疗手册及中国疾控中心技术指南。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调"72 小时"？因为病毒进入体内后需要时间建立感染，这个窗口期内用药可以阻断。超过 72 小时，阻断效果大幅下降。所以这件事有严格的时效性，<strong>拖延就是在放弃机会</strong>。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">中国疾病预防控制中心性病艾滋病预防控制中心（暴露后预防技术指南）. <a href="https://ncaids.chinacdc.cn/">https://ncaids.chinacdc.cn/</a>（检索路径：艾防中心 → 检测与治疗 / 技术指南栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>去哪拿药</strong>：当地传染病医院、疾控中心或指定的艾滋病抗病毒治疗定点医院。挂急诊或感染科，说明情况即可。这类就诊是保密的。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>吸烟：为什么"只抽一根"是陷阱</h3>
+      <div class="tags"><span class="tag">钱 · 大</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">长期吸烟的经济成本很高（按每天一包、每包 20 元算，一年约 7300 元），且戒断需要多次尝试。</dd>
+      <dt>说人话</dt><dd class="plain">尼古丁的成瘾性极强，且起效极快（吸入后几秒到达大脑）。这意味着"偶尔抽一根"很容易变成"每天一根"，再变成"每天一包"。不是意志力问题，是药理机制——尼古丁会改变大脑的奖赏回路，让"不抽"变成一种不适。</dd>
+      <dt>收益</dt><dd class="gain">烟草依赖在疾病分类中被列为一种物质使用障碍（成瘾性疾病），而非"坏习惯"。这意味着戒烟在医学上是有规范治疗方案的（行为干预 + 药物辅助），不是单纯靠意志。</dd>
+      <dt>为什么</dt><dd class="why">为什么强调"这是疾病不是习惯"？因为定性决定了应对方式。"习惯"靠意志改，"成瘾"需要治疗。很多戒烟失败的人，是因为用错了方法——硬扛，结果反复。而规范治疗（如尼古丁替代疗法）的成功率明显更高。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">世界卫生组织烟草控制相关技术文件. <a href="https://www.who.int/zh/health-topics/tobacco">https://www.who.int/zh/health-topics/tobacco</a>；中国疾病预防控制中心控烟办公室. <a href="https://www.chinacdc.cn/">https://www.chinacdc.cn/</a>（检索路径：中国疾控中心 → 健康主题 / 政策文件栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>电子烟同样含尼古丁，同样成瘾</strong>，不是"更安全的替代品"。国家已对电子烟实施专卖管理，向未成年人销售属违法。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>喝酒：脸红不是"能喝"，是代谢缺陷</h3>
+      <div class="tags"><span class="tag">钱 · 中</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">一次醉酒可能影响几天状态，长期饮酒影响肝功能。</dd>
+      <dt>说人话</dt><dd class="plain">喝酒脸红，是因为体内缺乏代谢乙醛的酶（乙醛脱氢酶），导致有毒的乙醛在体内堆积。这是基因决定的，不是"练出来的"。脸红的人喝酒，食管癌风险显著高于不脸红的人。所以"脸红说明能喝"是完全相反的结论。</dd>
+      <dt>收益</dt><dd class="gain">酒精在体内代谢为乙醛，乙醛是明确的致癌物。东亚人群中乙醛脱氢酶缺陷的比例较高，这与饮酒后食管癌风险升高相关，是流行病学的明确发现。</dd>
+      <dt>为什么</dt><dd class="why">为什么这条重要？因为酒桌文化里"脸红是好事"的错误认知极普遍。知道机制之后，你就有了一句无法反驳的拒绝理由：<strong>"我乙醛脱氢酶缺陷，喝了会积累致癌物"</strong>——这比"我不能喝"有效得多。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">世界卫生组织国际癌症研究机构（IARC）将酒精饮料与乙醛列为致癌物. <a href="https://www.iarc.who.int/">https://www.iarc.who.int/</a>；中国疾控中心健康相关科普. <a href="https://www.chinacdc.cn/">https://www.chinacdc.cn/</a>（检索路径：IARC Monographs → 按物质名检索分类结论；中国疾控中心 → 健康主题 / 政策文件栏目）</dd>
+      <dt>备注</dt><dd class="note"><strong>没有"安全饮酒量"这个说法</strong>——近年研究倾向于认为任何剂量的酒精都增加健康风险。所谓"适量饮酒有益健康"的说法，在方法学上已被质疑。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch17">
+    <h2>17. 和学校、辅导员、导师打交道</h2>
+    <div class="intro"><p>这一章讲的是"规则"：学校有它自己的运行逻辑，辅导员有他的职责边界，导师有他的权力范围。搞不清这些，很多事会白费力气。</p><p>不教你"搞好关系"，只讲<strong>什么事找谁、依据哪条、留什么证据</strong>。</p><p>&gt; ⚠️ <strong>这一章涉及校内处分与申诉，请把它当"发现问题"的清单，不要当诊断或法律意见</strong></p><p>&gt; 内容最后核对：2026-10-29。政策与指南会更新，动手前请以官方原文为准。</p><p>&gt; <strong>出现下列情况，先找专业人士，不要照着本书操作</strong>：已经收到处分决定书、涉及学籍异动（退学 / 转学 / 休学）、申诉时限临近——立刻找学校学生申诉处理委员会，必要时咨询教育行政部门。</p><p>本章条目：</p><p>- 第 1 条：学校的处分权有多大，程序是什么</p><p>- 第 2 条：处分会留多久，能不能消掉</p><p>- 第 3 条：辅导员能做什么、做不了什么</p><p>- 第 4 条：申诉是你的法定权利，别放弃</p><p>- 第 5 条：和导师的分歧，怎么处理不伤前途</p><p>- 第 6 条：学生手册是合同，出事前先读</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>学校能处分你，但必须走程序</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">申诉与沟通需要时间，可能持续数周。</dd>
+      <dt>说人话</dt><dd class="plain">学校对学生有处分权，但这不是"想怎么处就怎么处"。法规规定了几种处分种类（警告、严重警告、记过、留校察看、开除学籍），并且规定了<strong>作出处分前必须告知事实、听取陈述和申辩</strong>。也就是说，你有权知道理由、有权说话。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第五十一条规定学生处分的种类分为五种：警告、严重警告、记过、留校察看、开除学籍。第五十五条规定，学校对学生作出处分，应当出具处分决定书；处分决定书应当包括处分的事实、理由、依据、期限及申诉途径等内容。第五十六条规定，学校在对学生作出处分决定之前，应当告知学生作出决定的事实、理由及依据，并告知学生享有陈述和申辩的权利，听取学生的陈述和申辩。</dd>
+      <dt>为什么</dt><dd class="why">这条最实用的是"陈述和申辩的权利"——在处分作出<strong>之前</strong>，学校必须听你说话。很多学生在这阶段沉默，以为辩解没用，实际上这是成本最低的救济机会。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第五十一、五十五、五十六条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note">注意时间节点——陈述申辩在决定作出<strong>前</strong>，申诉在决定送达<strong>后</strong>。这两个阶段的权利不同，别搞混。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>处分会跟你多久：能不能消掉</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag irr">口径 · 不可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">解除处分通常需要表现良好、经过一定期限。</dd>
+      <dt>说人话</dt><dd class="plain">处分分两种命运：警告、严重警告、记过、留校察看这四种，在处分期内表现良好可以申请解除；<strong>开除学籍是最重的，不可解除</strong>。而解除处分后，原则上不再影响评优、升学等——但具体要看各校规定。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第五十七条规定：「除开除学籍处分以外，学校应当给予学生处分的情形，处分期限一般为 6 到 12 个月，到期按学校规定程序予以解除。解除处分后，学生获得表彰、奖励及其他权益，不再受原处分的影响。」</dd>
+      <dt>为什么</dt><dd class="why">这条的关键在于"到期按学校规定程序予以解除"——<strong>解除不是自动的</strong>，需要走程序（通常是本人申请、院系审核）。很多人以为"时间到了自动就好了"，结果毕业时才发现处分记录还在。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第五十七条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note"><strong>开除学籍不可解除</strong>，且会记入学籍档案。这条是最需要避免的——遇到可能走向开除的情况（如考试作弊、严重违纪），第一时间找法律援助或专业律师，不要自己硬扛。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>辅导员：职责有边界，不是万能的</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">沟通成本，几乎没有。</dd>
+      <dt>说人话</dt><dd class="plain">辅导员的核心职责是思想政治教育、日常管理、心理健康关注、就业指导。他<strong>不是</strong>你的私人助理，也<strong>不是</strong>法官——处分决定不是他一个人做的（要走院系和学校程序）。同样，他也没有权力"直接帮你改成绩""直接让你过"。</dd>
+      <dt>收益</dt><dd class="gain">辅导员制度依《普通高等学校辅导员队伍建设规定》（教育部令第 43 号）设立，明确辅导员的主要工作职责包括思想理论教育和价值引领、党团和班级建设、学业指导、心理健康教育与咨询工作、网络思想政治教育、校园危机事件应对、职业规划与就业创业指导等。</dd>
+      <dt>为什么</dt><dd class="why">搞清楚边界，才能提对诉求。找辅导员办事，有效的方式是"我遇到什么情况、需要什么帮助、依据哪条规定"；无效的方式是"你能不能帮我通融一下"——后者超出了他的权限，也让他为难。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校辅导员队伍建设规定（教育部令第 43 号）. <a href="http://www.moe.gov.cn/">http://www.moe.gov.cn/</a>（检索路径：教育部官网 → 站内搜索文件标题 → 查看原文附件）</dd>
+      <dt>备注</dt><dd class="note"><strong>涉及人身安全、心理危机的事，辅导员有上报责任</strong>，这是制度要求，不是他"告密"。理解这一点，就不会因为"怕被告诉家长"而不敢求助。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>申诉：这是法定权利，不是"闹事"</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 中</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">写申诉材料、准备证据，通常几天到两周。</dd>
+      <dt>说人话</dt><dd class="plain">对处分决定不服，你有权申诉。这不是"跟学校对着干"，是制度设计的救济渠道。申诉有明确的受理机构（通常是学校学生申诉处理委员会）和时限（收到决定书之日起一定期限内提出）。</dd>
+      <dt>收益</dt><dd class="gain">《普通高等学校学生管理规定》第六十二条规定：「学生对学校的处理或者处分决定有异议的，可以在接到学校处理或者处分决定书之日起 10 日内，向学校学生申诉处理委员会提出书面申诉。」第六十四条规定，学生申诉处理委员会应当对申诉进行复查，并在接到书面申诉之日起 15 日内作出复查结论并告知申诉人。</dd>
+      <dt>为什么</dt><dd class="why">为什么很多人放弃申诉？因为觉得"肯定没用"。但数据显示不清——关键是很多人<strong>错过了 10 日时限</strong>，或者申诉材料只有情绪没有事实。有效的申诉是：指出程序违法（如未告知、未听取申辩）或事实认定错误，并附证据。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号，第六十二、六十四条）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a></dd>
+      <dt>备注</dt><dd class="note"><strong>10 日</strong>是硬时限，从接到决定书之日起算。收到处分决定后第一件事就是看这个日期。另外，对复查结论仍不服的，还可以向省级教育行政部门提出书面申诉。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>和导师的分歧：怎么处理不伤前途</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 多</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">沟通与协商的时间，可能涉及更换导师。</dd>
+      <dt>说人话</dt><dd class="plain">研究生阶段，导师在学术指导、课题安排、毕业推荐上有实质影响力。分歧常见于：研究方向、工作量、署名顺序、毕业时间。处理原则是：<strong>先明确诉求，再找依据，最后才是升级</strong>。升级路径通常是：导师 → 学院/系 → 研究生院。</dd>
+      <dt>收益</dt><dd class="gain">研究生指导教师的责任与学生的权利，见《普通高等学校学生管理规定》及各校研究生管理规定。学位授予的争议，可依《学位条例》及相关规定申请复核。</dd>
+      <dt>为什么</dt><dd class="why">为什么要"先明确诉求"？因为很多分歧的实质不是"谁对谁错"，而是"期待不一致"。导师以为你要读博，你以为只要毕业——这种错位不谈清楚，做多少都是错的。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">《普通高等学校学生管理规定》<a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a>；各校研究生管理规定与导师条例</dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——法律框架清楚，但"怎么谈"没有标准答案。<strong>保留沟通记录</strong>（邮件、微信文字），这在后续任何程序中都是关键证据。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c6">
+      <h3><span class="num">6.</span>学生手册：它是你和学校之间的"合同"</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">花两小时读一遍，收益极高。</dd>
+      <dt>说人话</dt><dd class="plain">学生手册（或《学生管理规定》汇编）里写着你所有的权利义务：请假制度、考试纪律、处分情形、评奖条件、住宿规定、申诉流程。<strong>绝大多数人只在出事时才想起来翻它</strong>，那时已经晚了。</dd>
+      <dt>收益</dt><dd class="gain">学校依据《普通高等学校学生管理规定》制定本校细则，这些细则是处分与评奖的直接依据。学校的规定不得与上位法冲突，但可以在上位法框架内细化。</dd>
+      <dt>为什么</dt><dd class="why">为什么说它是"合同"？因为学校处分你时，依据的就是这本手册里的条款。你事先读过，就知道哪些线不能踩；出事后读过，就知道学校的处分是否有依据、程序是否合规。</dd>
+      <dt>证据等级</dt><dd class="evidence">A</dd>
+      <dt>来源</dt><dd class="source">教育部 (2017). 普通高等学校学生管理规定（教育部令第 41 号）. <a href="http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html">http://www.moe.gov.cn/srcsite/A02/s5911/moe_621/201702/t20170216_296385.html</a>；各校据此制定的本校学生管理规定</dd>
+      <dt>备注</dt><dd class="note"><strong>重点读三部分</strong>：考试纪律（哪些行为算作弊、后果多重）、处分程序（谁决定、怎么申诉）、评奖评优条件（哪些加分有效）。这三部分直接关系到你的实际利益。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <section class="chapter" id="ch18">
+    <h2>18. 把话说清楚：模糊表达的代价</h2>
+    <div class="intro"><p>这一章讲一件看起来很"软"、但可以直接算出成本的事：<strong>表达模糊会让你损失什么。</strong></p><p>不是教你"好好说话"，是教你识别自己的模糊表达，并把它换成可验证的句子。因为在所有需要协作的场合——求职、汇报、谈判、写论文——模糊都是最贵的那个习惯。</p><p>本章条目：</p><p>- 第 1 条：模糊表达的三类形态，先认出自己</p><p>- 第 2 条：把"我感觉"换成"具体是"，一个可操作的替换表</p><p>- 第 3 条：求职和汇报里，模糊直接等于减分</p><p>- 第 4 条：为什么"说清楚"很难：模糊有时是保护</p><p>- 第 5 条：练习方法：每天改一句话</p></div>
+    <article class="item" id="c1">
+      <h3><span class="num">1.</span>模糊表达的三类形态</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">认出来只需要几分钟，改掉需要几周。</dd>
+      <dt>说人话</dt><dd class="plain">模糊表达不是"说话不清楚"，它有三类具体形态：<strong>程度模糊</strong>（"差不多""挺多的""快好了"）——没有量化；<strong>指代模糊</strong>（"这个""那个""他们"）——没有说清是谁、是什么；<strong>判断模糊</strong>（"应该可以""问题不大""我尽量"）——没有承诺，也没有可验证的结果。</dd>
+      <dt>收益</dt><dd class="gain">三类模糊的共同点是：<strong>听话的人无法据此行动</strong>。程度模糊不知道要准备多少，指代模糊不知道该找谁，判断模糊不知道这件事到底做不做。</dd>
+      <dt>为什么</dt><dd class="why">为什么这三种最难改？因为它们不是错误，是<strong>习惯性的省力</strong>。说"我尽量"比说"我周三前给你，如果延期我会提前一天告诉你"省力得多。代价是把不确定性转移给了对方。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据可统计模糊表达的分类分布。本条为语言使用观察归纳</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。验证方法很简单：把你最近一条发给老师的微信重读一遍，看能不能从中读出"谁、做什么、什么时候"。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c2">
+      <h3><span class="num">2.</span>替换表：把模糊句换成可验证的句子</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">每次多写几个字。</dd>
+      <dt>说人话</dt><dd class="plain">模糊表达可以按固定方式替换。<strong>程度模糊 → 数字或范围</strong>（"挺多的" → "大概 20 份"）；<strong>指代模糊 → 具体名称</strong>（"那个系统" → "教务系统的选课模块"）；<strong>判断模糊 → 条件式承诺</strong>（"我尽量" → "如果数据周三前给我，我周五能出初稿"）。</dd>
+      <dt>收益</dt><dd class="gain">条件式承诺是这里最关键的一项。它同时给出<strong>时间</strong>和<strong>前提</strong>，让对方知道"什么情况下能成、什么情况下会延"。这比任何"我尽力"都有信息量。</dd>
+      <dt>为什么</dt><dd class="why">为什么条件式承诺有效？因为它把责任边界说清楚了：不是我保证做到，是我们约定了前提。这样既专业，也保护你自己——前提没满足时，延期不是你的错。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据验证替换表的效果。本条为沟通实践归纳</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。它不保证对方满意，但保证对方能据此安排自己的事——这在协作中就是价值。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c3">
+      <h3><span class="num">3.</span>求职与汇报：模糊直接等于减分</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 大</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">改写简历和汇报需要几小时。</dd>
+      <dt>说人话</dt><dd class="plain">招聘和汇报是两个"模糊必被抓"的场景。简历上写"负责了 XX 项目的开发"，面试官下一句就是"你负责哪部分、用什么技术、结果如何"；汇报里说"进展顺利"，领导下一句就是"完成了多少、还差什么"。答不上来，前面的信任就打折了。</dd>
+      <dt>收益</dt><dd class="gain">可量化的表述明显更有说服力。有一个可参考的实证方向：职业成功研究中，清晰度（clarity）被视为影响职业进展的一个因素——即个体对自身目标与路径的明确程度，与职业结果相关。</dd>
+      <dt>为什么</dt><dd class="why">为什么模糊在这两个场景代价特别大？因为这两个场景都在做"判断"——面试官判断你能不能干活，领导判断项目能不能按时交付。判断需要信息，模糊恰恰不提供信息，于是对方只能往保守方向估。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">Career success 研究中关于 clarity 的讨论，见 Looking Out and Beyond: A Clarity Perspective Model of Career Success (SSRN). <a href="https://doi.org/10.2139/ssrn.1658788">https://doi.org/10.2139/ssrn.1658788</a></dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——相关研究存在，但它是组织行为学的一般框架，不是"简历写数字就能涨薪"的因果证据。引用时不要说成因果。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c4">
+      <h3><span class="num">4.</span>为什么"说清楚"这么难：模糊有时是保护</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 否</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">理解这一点不花钱。</dd>
+      <dt>说人话</dt><dd class="plain">模糊不总是缺点。在三种情况下它是理性的：<strong>信息不足</strong>（你确实不知道，硬说就是编）；<strong>关系敏感</strong>（直接拒绝会伤人，模糊是缓冲）；<strong>责任规避</strong>（承诺越具体，被追责越容易）。所以"消除模糊"不是无条件的，要先判断场合。</dd>
+      <dt>收益</dt><dd class="gain">判断标准是：<strong>这件事的结果是否需要别人据此行动？</strong> 需要——就必须清楚；不需要（如社交寒暄）——模糊无害。求职、汇报、协作属于前者；聊天、寒暄属于后者。</dd>
+      <dt>为什么</dt><dd class="why">为什么这条重要？因为"消除模糊"如果当成教条，会让人变得生硬甚至冒犯。真正要改的不是"所有模糊"，是"该清楚时的模糊"。</dd>
+      <dt>证据等级</dt><dd class="evidence">C</dd>
+      <dt>来源</dt><dd class="source">没有公开数据。本条为语用学常识与沟通实践归纳</dd>
+      <dt>备注</dt><dd class="note">这条是 C 级经验判断，<strong>没有权威数据</strong>。一个实用的自检：你这句话说出去，对方能不能据此做一个决定？能，就该清楚；不能，模糊也没关系。</dd>
+      </dl>
+    </article>
+    <article class="item" id="c5">
+      <h3><span class="num">5.</span>练习方法：每天改一句话</h3>
+      <div class="tags"><span class="tag">钱 · 0</span><span class="tag">时间 · 少</span><span class="tag">毅力 · 是</span><span class="tag">收益 · 中</span><span class="tag rev">口径 · 可逆</span></div>
+      <dl class="dl">
+      <dt>成本</dt><dd class="cost">每天几分钟，坚持两三周能形成习惯。</dd>
+      <dt>说人话</dt><dd class="plain">不要试图"以后说话都清楚"——这种目标太大，必然失败。可行的方法是：<strong>每天挑一句你发出去的话，重写成可验证的版本</strong>，然后对比。两三周后你会开始自动这样做。</dd>
+      <dt>收益</dt><dd class="gain">这个方法的原理是"刻意练习"——把自动化行为拆解成可观察的步骤，反复练到重新自动化。它在技能习得领域有较成熟的研究基础。</dd>
+      <dt>为什么</dt><dd class="why">为什么"每天一句"比"全面改变"有效？因为模糊表达是高频、自动化的习惯，触发点分散在一天里。定点练习一小步，比立一个大目标更容易坚持，也更容易看到反馈。</dd>
+      <dt>证据等级</dt><dd class="evidence">B</dd>
+      <dt>来源</dt><dd class="source">刻意练习（deliberate practice）作为技能习得机制的讨论，见 Ericsson, K. A. et al. (1993). The Role of Deliberate Practice in the Acquisition of Expert Performance. <a href="https://doi.org/10.1037/0033-295X.100.3.363">https://doi.org/10.1037/0033-295X.100.3.363</a></dd>
+      <dt>备注</dt><dd class="note">这条是 B 级——刻意练习的框架有研究支持，但"每天改一句中文"这个具体方案没有专门验证，属合理推论。</dd>
+      </dl>
+    </article>
+  </section>
+
+  <footer class="end">
+    本书汇总公开信息，供参考；不构成法律、医疗、投资建议。<br>
+    每条可核对「来源」行；发现错误请提 Issue。
+
+    <div class="iconbox">
+      <button id="pickIcon" type="button" class="ghost">换个图标</button>
+      <button id="resetIcon" type="button" class="ghost" hidden>恢复默认</button>
+      <span class="hint" id="iconHint"></span>
+      <input id="iconFile" type="file" accept="image/*" hidden>
+    </div>
+  </footer>
+</div>
+
+<!-- 安装引导：只在"能装但还没装"时出现，装完自动消失，关闭后记住选择 -->
+<div id="installBar" hidden>
+  <span>在手机上装成 App，可离线读</span>
+  <button id="installBtn" type="button">安装</button>
+  <button id="installClose" type="button" aria-label="关闭">×</button>
+</div>
+
+<script>
+(function () {
+  // 注册 Service Worker（离线缓存）。用相对路径，兼容 GitHub Pages 子路径部署。
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* 离线能力失败不影响阅读 */ });
+    });
+  }
+
+  var bar = document.getElementById('installBar');
+  var btn = document.getElementById('installBtn');
+  var close = document.getElementById('installClose');
+  var deferred = null;
+
+  if (localStorage.getItem('hideInstallBar') === '1') return;
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferred = e;
+    if (bar) bar.hidden = false;
+  });
+
+  if (btn) btn.addEventListener('click', function () {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function () { deferred = null; if (bar) bar.hidden = true; });
+  });
+
+  if (close) close.addEventListener('click', function () {
+    if (bar) bar.hidden = true;
+    localStorage.setItem('hideInstallBar', '1');
+  });
+
+  window.addEventListener('appinstalled', function () {
+    if (bar) bar.hidden = true;
+  });
+})();
+
+/* ---------- 自定义桌面图标 ----------
+ * 做法：把用户选的图裁成正方形，画到 canvas 上导出 PNG(data URL)，
+ * 再换掉 <link rel=icon> / <link rel=apple-touch-icon>，
+ * 并用 blob URL 重写一份 manifest 指向新图标。
+ *
+ * 有一个物理限制必须讲清楚：
+ *   图标一旦被系统"安装到桌面"，Android/iOS 就把它固化了。
+ *   网页改的只是"下次安装时用哪张图"。所以要看到新图标，
+ *   得先卸载再重新安装。这一点在界面上明说了，不骗用户。
+ */
+(function () {
+  var KEY = 'customIconDataUrl';
+  var pick = document.getElementById('pickIcon');
+  var reset = document.getElementById('resetIcon');
+  var file = document.getElementById('iconFile');
+  var hint = document.getElementById('iconHint');
+  var appleLink = document.getElementById('appleIcon');
+  var favLink = document.getElementById('favIcon');
+  if (!pick || !file) return;
+
+  function say(t) { if (hint) hint.textContent = t; }
+
+  // 把任意图片裁成正方形并缩放，返回 dataURL
+  function toSquareDataUrl(img, size) {
+    var c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    var ctx = c.getContext('2d');
+    var s = Math.min(img.width, img.height);          // 取短边，保证不变形
+    var sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+    return c.toDataURL('image/png');
+  }
+
+  // 用 blob URL 生成一份指向自定义图标的 manifest
+  function rewriteManifest(dataUrl) {
+    var link = document.getElementById('appManifest');
+    if (!link) return;
+    var mf = {
+      name: '学生版 · 高性价比人生指南',
+      short_name: '学生指南',
+      description: '写给 18–25 岁：每条写明成本、收益与证据来源。',
+      start_url: './', scope: './', display: 'standalone',
+      orientation: 'portrait',
+      background_color: '#fdfcf9', theme_color: '#1f6feb', lang: 'zh-CN',
+      icons: [
+        { src: dataUrl, sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: dataUrl, sizes: '192x192', type: 'image/png', purpose: 'any' }
+      ]
+    };
+    var blob = new Blob([JSON.stringify(mf)], { type: 'application/manifest+json' });
+    link.href = URL.createObjectURL(blob);
+  }
+
+  function apply(dataUrl, announce) {
+    if (favLink) favLink.href = dataUrl;
+    if (appleLink) appleLink.href = dataUrl;
+    rewriteManifest(dataUrl);
+    if (reset) reset.hidden = false;
+    if (announce !== false) {
+      // 判断是否已经在独立窗口里跑（说明已安装）
+      var standalone = window.matchMedia('(display-mode: standalone)').matches
+                    || window.navigator.standalone === true;
+      say(standalone
+        ? '已换好。桌面图标是安装时固定的，要看到新图标请先删除再重新添加。'
+        : '已换好。现在用浏览器菜单「添加到主屏幕」，就会用这张图。');
+    }
+  }
+
+  // 启动时套用已保存的图标
+  try {
+    var saved = localStorage.getItem(KEY);
+    if (saved) apply(saved, false);
+  } catch (e) {}
+
+  pick.addEventListener('click', function () { file.click(); });
+
+  file.addEventListener('change', function () {
+    var f = file.files && file.files[0];
+    if (!f) return;
+    // 用 indexOf 判类型：在模板字符串里写正则的 / 会被转义吃掉，
+    // 生成出 ^image// 这种非法正则，整段脚本会静默中断。
+    if (f.type.indexOf('image/') !== 0) { say('这个文件不是图片，换一张试试。'); return; }
+
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var big = toSquareDataUrl(img, 512);
+          // 太大的图 base64 会撑爆 localStorage，压到能存下的程度
+          if (big.length > 1.6 * 1024 * 1024) {
+            big = toSquareDataUrl(img, 256);
+            say('图片较大，已压缩到 256px 保存。');
+          }
+          localStorage.setItem(KEY, big);
+          apply(big);
+        } catch (e) {
+          say('这张图处理失败了，换一张试试（JPG / PNG 最稳）。');
+        }
+      };
+      img.onerror = function () { say('这张图读不出来，可能已损坏。'); };
+      img.src = reader.result;
+    };
+    reader.onerror = function () { say('读取文件失败。'); };
+    reader.readAsDataURL(f);
+    file.value = '';
+  });
+
+  if (reset) reset.addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    if (favLink) favLink.href = 'icon-192.png';
+    if (appleLink) appleLink.href = 'icon-192.png';
+    var link = document.getElementById('appManifest');
+    if (link) link.href = 'manifest.webmanifest';
+    reset.hidden = true;
+    say('已恢复默认图标。同样需要重新添加到主屏幕才会生效。');
+  });
+})();
+</script>
+</body>
+</html>

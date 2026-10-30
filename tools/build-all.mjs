@@ -42,6 +42,20 @@ if (fs.existsSync(dist)) {
   }
 }
 
+// 把可直接打开的文件同步到 docs/ —— Gitee 没有 Pages，仓库里的 docs/ 就是"托管目录"。
+// 之所以复制而不是软链：Gitee 和 GitHub 都不认软链，必须放真实文件。
+// 只复制"用户会直接点开"的那几个，构建中间产物（如 sw.js）留在 dist/ 不重复占体积。
+if (!failed.length && fs.existsSync(dist)) {
+  const docs = path.join(ROOT, 'docs');
+  fs.mkdirSync(docs, { recursive: true });
+  const SYNC = ['index.html', 'students-howtolivebetter.pdf'];
+  for (const f of SYNC) {
+    const src = path.join(dist, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(docs, f));
+  }
+  console.log('已同步到 docs/：' + SYNC.join(' / ') + '（供 Gitee 仓库内直接打开）');
+}
+
 if (failed.length) {
   console.error('\n有 ' + failed.length + ' 个步骤失败：' + failed.join(', '));
   process.exit(1);

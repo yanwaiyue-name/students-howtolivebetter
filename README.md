@@ -6,12 +6,20 @@
 
 > 这本书不告诉你该怎么活。它只把每件事的成本、收益、证据来源列清楚，让你自己算。
 
-**📖 在线读**：https://yanwaiyue-name.github.io/students-howtolivebetter/
+**📖 在线读**：
+
+| 入口 | 地址 | 说明 |
+|---|---|---|
+| **Gitee 站内**（国内推荐） | [docs/index.html](docs/index.html) | 不依赖任何外部托管，点开即读 |
+| GitHub Pages（可装成 App） | https://yanwaiyue-name.github.io/students-howtolivebetter/ | 支持「添加到主屏幕」离线阅读 |
+| PDF | [docs/students-howtolivebetter.pdf](docs/students-howtolivebetter.pdf) | 2.1 MB，适合打印存档 |
 
 [English](README.en.md) ｜ **中文**
 
 > 📍 **本仓库是 GitHub 的镜像。** 格式检查、统计检查、PDF / EPUB 构建都在 GitHub Actions 运行，
 > 因此这里的内容与下载产物可能滞后于 [GitHub 主仓库](https://github.com/yanwaiyue-name/students-howtolivebetter)。
+>
+> 站内那份 `docs/index.html` 由构建脚本自动同步，内容与 GitHub Pages 完全一致。
 
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/状态-写作中-orange)
