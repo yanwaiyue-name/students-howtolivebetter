@@ -26,6 +26,8 @@
 ![Entry](https://img.shields.io/badge/条目-99%20条-blue)
 
 </div>
+![Last Update](https://img.shields.io/badge/最后更新-2026--10--31-blue)
+![Search](https://img.shields.io/badge/功能-全文搜索-green)
 
 ---
 
