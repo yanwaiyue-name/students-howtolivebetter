@@ -1,7 +1,7 @@
 // 本文件由 tools/build-html.mjs 自动生成，不要手改。
 // 缓存版本跟着正文内容走：内容一变就换缓存名，避免用户一直看到旧版本。
 const CACHE = 'students-0b9710c68dd9';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const ASSETS = ['./', './index.html', './search.js', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
