@@ -353,6 +353,7 @@ const html = `<!DOCTYPE html>
   });
 })();
 </script>
+<script src="search.js" defer></script>
 </body>
 </html>`;
 
@@ -367,6 +368,12 @@ console.log(`已生成 dist/index.html（${chapters.length} 章 ${totalItems} �
 
 const ICONS = ['icon-192.png', 'icon-512.png'];
 for (const f of ICONS) {
+  const src = path.join(ROOT, 'assets', f);
+  if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST, f));
+}
+
+const EXTRA_ASSETS = ['search.js'];
+for (const f of EXTRA_ASSETS) {
   const src = path.join(ROOT, 'assets', f);
   if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST, f));
 }

@@ -48,7 +48,15 @@ if (fs.existsSync(dist)) {
 if (!failed.length && fs.existsSync(dist)) {
   const docs = path.join(ROOT, 'docs');
   fs.mkdirSync(docs, { recursive: true });
-  const SYNC = ['index.html', 'students-howtolivebetter.pdf'];
+  const SYNC = [
+    'index.html',
+    'students-howtolivebetter.pdf',
+    'search.js',
+    'manifest.webmanifest',
+    'icon-192.png',
+    'icon-512.png',
+    'sw.js'
+  ];
   for (const f of SYNC) {
     const src = path.join(dist, f);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(docs, f));

@@ -1,0 +1,26 @@
+{
+  "name": "学生版 · 高性价比人生指南",
+  "short_name": "学生指南",
+  "description": "写给 18–25 岁：每条写明成本、收益与证据来源。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdfcf9",
+  "theme_color": "#1f6feb",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

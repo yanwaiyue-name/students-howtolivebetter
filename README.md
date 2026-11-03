@@ -10,7 +10,7 @@
 
 | 入口 | 地址 | 说明 |
 |---|---|---|
-| **Gitee 站内**（国内推荐） | [docs/index.html](docs/index.html) | 不依赖任何外部托管，点开即读 |
+| **站内版**（国内推荐） | [docs/index.html](docs/index.html) | 不依赖任何外部托管，点开即读 |
 | GitHub Pages（可装成 App） | https://yanwaiyue-name.github.io/students-howtolivebetter/ | 支持「添加到主屏幕」离线阅读 |
 | PDF | [docs/students-howtolivebetter.pdf](docs/students-howtolivebetter.pdf) | 2.1 MB，适合打印存档 |
 

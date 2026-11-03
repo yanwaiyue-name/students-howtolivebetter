@@ -16,14 +16,18 @@ function initSearch() {
   searchIndex = searchData;
 }
 
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function search(query) {
   if (!query.trim()) return [];
-  const keywords = query.toLowerCase().split(/\s+/);
+  const keywords = query.toLowerCase().split(/\s+/).filter(Boolean);
   return searchIndex
     .map(item => {
       const text = (item.title + ' ' + item.content).toLowerCase();
       const score = keywords.reduce((sum, kw) => {
-        const count = (text.match(new RegExp(kw, 'g')) || []).length;
+        const count = (text.match(new RegExp(escapeRegExp(kw), 'g')) || []).length;
         return sum + count;
       }, 0);
       return { ...item, score };
@@ -51,10 +55,10 @@ function renderSearchResults(results, query) {
 }
 
 function highlightText(text, query) {
-  const keywords = query.toLowerCase().split(/\s+/);
+  const keywords = query.toLowerCase().split(/\s+/).filter(Boolean);
   let result = text;
   keywords.forEach(kw => {
-    const regex = new RegExp(`(${kw})`, 'gi');
+    const regex = new RegExp(`(${escapeRegExp(kw)})`, 'gi');
     result = result.replace(regex, '<mark style="background:yellow;padding:2px;">$1</mark>');
   });
   return result;
