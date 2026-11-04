@@ -159,6 +159,7 @@ const html = `<!DOCTYPE html>
 <style>${CSS}</style>
 </head>
 <body>
+<script src="https://yanwaiyue-name.github.io/yuese-nav/nav.js" data-site="students-howtolivebetter" data-theme="light" data-max="760" defer></script>
 <div class="wrap">
   <header class="book">
     <h1>🎓 学生版 · 高性价比人生指南</h1>
