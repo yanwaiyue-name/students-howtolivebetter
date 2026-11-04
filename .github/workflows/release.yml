@@ -61,18 +61,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # latest 标签是移动标签：每次覆盖，保证下载链接永久有效
-          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create latest \
-            --title "最新构建" \
-            --notes "正文更新于 $(date -u '+%Y-%m-%d %H:%M UTC')
+          # latest 是固定 tag，下载链接永久有效。
+          # 不能先 delete 再 create：create 失败时 latest 会凭空消失，所有下载链接一起 404。
+          # 已有 release 就 upload --clobber 覆盖同名资产；没有才新建。
+          NOTES="正文更新于 $(date -u '+%Y-%m-%d %H:%M UTC')
 
-          包含 5 种格式：网页版 / Markdown / 纯文本 / EPUB / PDF。" \
-            dist/index.html \
-            dist/students-howtolivebetter.md \
-            dist/students-howtolivebetter.txt \
-            dist/students-howtolivebetter.epub \
-            dist/students-howtolivebetter.pdf
+          包含 5 种格式：网页版 / Markdown / 纯文本 / EPUB / PDF。"
+          FILES="dist/index.html dist/students-howtolivebetter.md dist/students-howtolivebetter.txt dist/students-howtolivebetter.epub dist/students-howtolivebetter.pdf"
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest $FILES --clobber
+            gh release edit latest --title "最新构建" --notes "$NOTES"
+          else
+            gh release create latest --title "最新构建" --notes "$NOTES" $FILES
+          fi
 
   deploy-pages:
     name: 部署网页版
