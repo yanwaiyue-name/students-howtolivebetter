@@ -16,8 +16,8 @@
 
 [English](README.en.md) ｜ **中文**
 
-> 📍 **本仓库是 GitHub 的镜像。** 格式检查、统计检查、PDF / EPUB 构建都在 GitHub Actions 运行，
-> 因此这里的内容与下载产物可能滞后于 [GitHub 主仓库](https://github.com/yanwaiyue-name/students-howtolivebetter)。
+> 📍 **本仓库同步自上游主仓库。** 格式检查、统计检查、PDF / EPUB 构建都在 GitHub Actions 运行，
+> 因此其他镜像上的内容与下载产物可能滞后。
 >
 > 站内那份 `docs/index.html` 由构建脚本自动同步，内容与 GitHub Pages 完全一致。
 
